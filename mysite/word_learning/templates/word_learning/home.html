@@ -1,0 +1,18 @@
+{% extends "word_learning/base.html" %}
+{% block content %}
+{% for word in words %}
+<div class="post block">
+    <h1 class="englishword">
+        <strong>
+            {{word.eng_word}}
+        </strong>
+    </h1>
+    <ul class="japanesewords">
+        {% for meaning in word.meaning.all %}
+            <li>{{ meaning.japa_word }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<hr>
+{% endfor %}
+{% endblock %}
