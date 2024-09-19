@@ -1,0 +1,18 @@
+{% extends "word_learning/base.html" %}
+{% block content %}
+{% for word in words %}
+<div class="post block">
+    <h1 class="englishword">
+        <strong>
+            {{word.eng_word}}
+        </strong>
+    </h1>
+    <ul class="japanesewords">
+            <li>{{ word.meaning }}</li>
+    </ul>
+    <a href="{% url 'word_detail' word.id %}">detail of this word</a>
+</div>
+<hr>
+{% endfor %}
+<a href="{% url 'upload_word' %}">Upload English Word</a>
+{% endblock %}
