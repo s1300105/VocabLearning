@@ -1,0 +1,15 @@
+{% extends "word_learning/base.html" %}
+{% block content %}
+
+<h2>What is the meaning of {{answer_japa}} in English?</h2>
+
+<form action="{% url 'result' %}" method="post">
+    {% csrf_token %}
+    {% for word in shuffled_words %}
+        <input type="radio" name="word_choice" id="word{{ forloop.counter}}" value="{{ word }}">
+        <label for="word{{ forloop.counter }}">{{ word }}</label><br>
+    {% endfor %}
+    <input type="submit" value="Answer">
+</form>
+
+{% endblock %}

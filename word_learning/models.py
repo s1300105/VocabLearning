@@ -7,5 +7,7 @@ class EngWord(models.Model):
     def __str__(self):
         return self.eng_word 
     
-
+class ExampleSentence(models.Model):
+    sentence = models.CharField(max_length=60)
+    eng_word = models.ForeignKey(EngWord, on_delete=models.CASCADE)
 

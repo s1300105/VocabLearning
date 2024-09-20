@@ -1,5 +1,16 @@
 {% extends 'word_learning/base.html' %}
 {% block content %}
-<h2>{{sentence}}</h2>
+
+{% for sentence in all_sentences %}
+    <h2>{{sentence}}</h2>
+{% endfor %}
+<br>
+<hr>
+<form method="POST" action="{% url 'word_detail' pk=word_id %}">
+    {% csrf_token %}
+    <button type="submit" name="generate_sentence">Generate new sentence</button>
+</form>
+
+
 
 {% endblock %}
