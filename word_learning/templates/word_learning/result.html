@@ -1,0 +1,11 @@
+{% extends "word_learning/base.html" %}
+{% block content %}
+<h2>{{result}}</h2>
+<br>
+<a href="{% url 'word_detail' answer_id %}">Go to the detail of "{{answer}}"</a>
+<hr>
+<a href="{% url 'word_quiz' %}">NEXT</a>
+<br>
+<a href="{% url 'home' %}">Return to Home</a>
+
+{% endblock %}
