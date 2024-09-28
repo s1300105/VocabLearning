@@ -7,3 +7,9 @@ class UploadEngWord(ModelForm):
         fields = ['eng_word', 'meaning']
 
 
+class ReviseDetail(ModelForm):
+    class Meta:
+        model = EngWord
+        fields = ['part_of_speech', 'synonyms', 'antonyms']
+
+
