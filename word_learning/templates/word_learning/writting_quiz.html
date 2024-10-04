@@ -9,10 +9,12 @@
 {% for quiz in quiz_page  %}
     <strong>Question</strong>
     <h2>{{quiz.quiz}}</h2>
-    <strong>Score</strong>
-    <h2>{{quiz.score}}</h2>
+    
+    
     <br>
     <a href="{% url 'wr_quiz_page' quiz.id %}">Go to Question</a>
+    <br>
+    <a href="{% url 'answer_history' quiz.id %}">Go to answer</a>
     <br><hr>
 {% endfor %}
 

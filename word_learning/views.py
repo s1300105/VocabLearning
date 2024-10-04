@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import EngWord, ExampleSentence, WrittingQuiz
-from .forms import UploadEngWord, ReviseDetail
-from .llm_config import get_llm, example_sentence, writingquiz_llm, get_llm_writting
+from .models import EngWord, ExampleSentence, WrittingQuiz, WrittingAnswer
+from .forms import UploadEngWord, ReviseDetail, WrittingForm
+from .llm_config import get_llm, example_sentence, writingquiz_llm, get_llm_writting, getllm_eval_wr, llm_eval_wr
 from random import sample, choice
 from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+import re
 
 def home(request):
     words = EngWord.objects.all().order_by('eng_word')
@@ -138,18 +141,105 @@ def writting_quiz(request):
         )
         instance.save()
     
-    all_quiz = WrittingQuiz.objects.all().order_by('score', '-created_at')
+    all_quiz = WrittingQuiz.objects.all().order_by('-created_at')
     paginator = Paginator(all_quiz, 10)
     page_number = request.GET.get('page', 1)
     quiz_page = paginator.get_page(page_number)
 
     context = {"all_quiz":all_quiz,
+               
                "quiz_page":quiz_page}
 
     return render(request, "word_learning/writting_quiz.html", context)
 
 
-def wr_quiz_page(request, pk):
-    quiz = WrittingQuiz.objects.get(id=pk)
-    context = {"quiz":quiz}
+def wr_quiz_page(request, quiz_id):
+    prog_answer = WrittingAnswer.objects.filter(scored=False).count()
+    if prog_answer > 3:
+        messages.error(request, "There are already 6 or more unscored WrittingAnswer instances. Please score your answers first.")
+        return redirect('error_writting')
+    quiz = WrittingQuiz.objects.get(id=quiz_id)
+    
+    if request.method == 'POST':
+        form = WrittingForm(request.POST)
+        if form.is_valid():
+            try:
+                answer = form.save(commit=False)
+                answer.quiz = quiz
+                answer.save()
+                return redirect('writting_fin')
+            except ValidationError as e:
+                messages.error(request, "The number of non scored files are more than limit. Please score your writting quizzes answer")
+                return redirect('error_page')
+        
+    else:
+        form = WrittingForm()
+    
+    context = {"quiz":quiz, "form":form}
+    
+
     return render(request, "word_learning/wr_quiz_page.html", context)
+
+def writting_fin(request):
+    prog_answers = WrittingAnswer.objects.filter(scored=False).order_by("created_at")
+    context = {'prog_answers':prog_answers}
+    
+    return render(request, "word_learning/writting_fin.html", context)
+
+def score_wr_quiz(request):
+    # スコアがまだついていない回答を取得
+    prog_answers = WrittingAnswer.objects.filter(scored=False).order_by("created_at")
+    
+    llm = getllm_eval_wr()  # LLM モデルを取得
+    
+    output = []
+    quiz = []
+    answer = []
+    
+    for answer_obj in prog_answers:
+        answer_text = answer_obj.answer  # `answer` 文字列を取得
+        quiz_text = answer_obj.quiz.quiz  # `quiz` の質問文を取得
+
+        answer.append(answer_text)
+        quiz.append(quiz_text)
+        
+        # 評価するためのコンテンツを作成
+        content = f"<Question>: {quiz_text} <Answer>: {answer_text}"
+        text = llm_eval_wr(llm, content)  # LLMで回答を評価
+        
+        # 正規表現でスコアを抽出
+        score_match = re.search(r'score:\s*(\d+)', text)
+        
+        if score_match:
+            score = int(score_match.group(1))  # スコアを整数に変換して取得
+            answer_obj.score = score  # WrittingAnswer の score フィールドにスコアを設定
+            answer_obj.scored = True  # スコアがついたことを記録
+            answer_obj.comment = text
+            answer_obj.save()  # 変更をデータベースに保存
+        
+            
+        
+        output.append(text)  # LLM の出力をリストに追加
+    quiz_ans_comment = zip(quiz, answer, output)
+    context = {
+        "quiz_ans_comment":quiz_ans_comment
+    }
+    
+    return render(request, "word_learning/score_wr_quiz.html", context)
+
+
+
+    
+
+def error_writting(request):
+    return render(request, "word_learning/error_writting.html")
+
+def makesure_score(request):
+    return render(request, "word_learning/makesure_score.html")
+
+def answer_history(request, quiz_id):
+    answers = WrittingAnswer.objects.filter(quiz = quiz_id)
+    context = {
+        'answers':answers
+    }
+    return render(request, "word_learning/answer_history.html", context)
