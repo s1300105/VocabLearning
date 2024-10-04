@@ -3,4 +3,12 @@
     <strong>Question</strong>
     <h2>{{quiz.quiz}}</h2>
     <hr>
+
+    <a href="{% url 'writting_fin' %}">movo to writting_fin</a> 
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit">Submit Answer</button>
+    </form>
 {% endblock %}

@@ -34,7 +34,14 @@ class ExampleSentence(models.Model):
 class WrittingQuiz(models.Model):
     quiz = models.CharField(max_length=1000)
     llm_quiz = models.BooleanField(default=False) #True means created by llm
-    score = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    highest_score = models.PositiveIntegerField(blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
-
+class WrittingAnswer(models.Model):
+    quiz = models.ForeignKey(WrittingQuiz, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=10000)
+    score = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
+    scored = models.BooleanField(default=False) # If it has not scored, this is false
+    comment = models.CharField(max_length=10000, blank=True, null = True)
+    created_at = models.DateTimeField(auto_now_add=True)
