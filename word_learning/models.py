@@ -1,6 +1,18 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser
 from multiselectfield import MultiSelectField
 from django.core.validators import MaxValueValidator, MinValueValidator
+
+class CustomUser(AbstractBaseUser):
+    CEFR_CHOICES = [
+        ('A1', 'A1 - Beginner'),
+        ('A2', 'A2 - Elementary'),
+        ('B1', 'B1 - Intermediate'),
+        ('B2', 'B2 - Upper Intermediate'),
+        ('C1', 'C1 - Advanced'),
+        ('C2', 'C2 - Mastery'),
+    ]
+    cefr = models.CharField(max_length=2, blank=True, null=True, choices=CEFR_CHOICES)
 
 class EngWord(models.Model):
     PART_OF_SPEECH_CHOICES = [
@@ -14,6 +26,16 @@ class EngWord(models.Model):
         ('interjection', 'Interjection'),
         ('article', 'Article'),
     ]
+    CEFR_CHOICES = [
+        ('A1', 'A1 - Beginner'),
+        ('A2', 'A2 - Elementary'),
+        ('B1', 'B1 - Intermediate'),
+        ('B2', 'B2 - Upper Intermediate'),
+        ('C1', 'C1 - Advanced'),
+        ('C2', 'C2 - Mastery'),
+    ]
+
+
     eng_word = models.CharField(max_length=30)
     meaning = models.CharField(max_length=300, blank=True, null=True)
     part_of_speech = MultiSelectField(max_length=30, 
@@ -22,7 +44,8 @@ class EngWord(models.Model):
                                       blank=True, null=True)
     synonyms = models.ManyToManyField('self', blank=True, null=True)
     antonyms = models.ManyToManyField('self', blank=True, null=True)
-    cefr = models.CharField(max_length=5, blank=True, null=True)
+    cefr = models.CharField(max_length=2, blank=True, null=True, choices=CEFR_CHOICES)
+    star = models.BooleanField(default=False)
 
 
     def __str__(self):
