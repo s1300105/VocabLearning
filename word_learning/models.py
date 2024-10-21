@@ -14,7 +14,7 @@ class EngWord(models.Model):
         ('interjection', 'Interjection'),
         ('article', 'Article'),
     ]
-    eng_word = models.CharField(max_length=30, unique=True)
+    eng_word = models.CharField(max_length=30)
     meaning = models.CharField(max_length=300, blank=True, null=True)
     part_of_speech = MultiSelectField(max_length=30, 
                                       choices=PART_OF_SPEECH_CHOICES,
@@ -22,6 +22,7 @@ class EngWord(models.Model):
                                       blank=True, null=True)
     synonyms = models.ManyToManyField('self', blank=True, null=True)
     antonyms = models.ManyToManyField('self', blank=True, null=True)
+    cefr = models.CharField(max_length=5, blank=True, null=True)
 
 
     def __str__(self):
