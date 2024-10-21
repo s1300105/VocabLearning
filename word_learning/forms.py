@@ -1,6 +1,8 @@
 from django.forms import ModelForm
 from django import forms
-from .models import EngWord, WrittingAnswer
+from .models import EngWord, WrittingAnswer, CustomUser
+from django.contrib.auth.forms import UserCreationForm
+
 
 class UploadEngWord(ModelForm):
     class Meta:
@@ -24,5 +26,23 @@ class WrittingForm(ModelForm):
                 'placeholder': 'Your answer here...'
             }),
         }
+
+class SignUpForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password1",
+            "password2"
+
+        )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # オプション: フィールドにCSSクラスを追加
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
 

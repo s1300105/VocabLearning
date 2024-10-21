@@ -1,12 +1,36 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import EngWord, ExampleSentence, WrittingQuiz, WrittingAnswer
-from .forms import UploadEngWord, ReviseDetail, WrittingForm
+from .forms import UploadEngWord, ReviseDetail, WrittingForm, SignUpForm
 from .llm_config import get_llm, example_sentence, writingquiz_llm, get_llm_writting, getllm_eval_wr, llm_eval_wr
 from random import sample, choice
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.contrib.auth import login, authenticate
 import re
+
+def index(request):
+    return render(request, "word_learning/index.html")
+
+def signup(request):
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():  # フォームのバリデーションチェックを追加
+            user = form.save()  # フォームからユーザーを保存
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password1')
+            # 新しく作成したユーザーで認証
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect("index")
+            else:
+                print("Authentication failed")
+    else:
+        form = SignUpForm()
+    return render(request, "word_learning/signup.html", {"form": form})
+
+
 
 def home(request):
     words = EngWord.objects.filter(star=True).order_by('eng_word')
