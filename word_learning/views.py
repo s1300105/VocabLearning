@@ -9,7 +9,7 @@ from django.contrib import messages
 import re
 
 def home(request):
-    words = EngWord.objects.all().order_by('eng_word')
+    words = EngWord.objects.filter(star=True).order_by('eng_word')
     return render(request, "word_learning/home.html", {"words":words})
 
 def upload_word(request):
@@ -32,11 +32,13 @@ def word_detail(request, pk):
     request.session['word_id'] = pk
     word_obj = get_object_or_404(EngWord, id=pk)
     input_word = word_obj.eng_word
+    meaning = word_obj.meaning
     part_of_speech = word_obj.part_of_speech
     synonym_objs = word_obj.synonyms.all()
     synonym = [synonym.eng_word for synonym in synonym_objs ]
     antonym_objs = word_obj.antonyms.all()
     antonym = [antonym.eng_word for antonym in antonym_objs]
+    cefr = word_obj.cefr
 
     
 
@@ -56,7 +58,9 @@ def word_detail(request, pk):
         'word_id':pk,
         'part_of_speech':part_of_speech,
         'synonyms':synonym,
-        'antonyms':antonym
+        'antonyms':antonym,
+        'meaning':meaning,
+        'cefr':cefr,
     }
 
 
