@@ -15,13 +15,13 @@ class EngWord(models.Model):
         ('article', 'Article'),
     ]
     eng_word = models.CharField(max_length=30, unique=True)
-    meaning = models.CharField(max_length=30, blank=True)
+    meaning = models.CharField(max_length=300, blank=True, null=True)
     part_of_speech = MultiSelectField(max_length=30, 
                                       choices=PART_OF_SPEECH_CHOICES,
                                       max_choices=9,
-                                      blank=True)
-    synonyms = models.ManyToManyField('self', blank=True)
-    antonyms = models.ManyToManyField('self', blank=True)
+                                      blank=True, null=True)
+    synonyms = models.ManyToManyField('self', blank=True, null=True)
+    antonyms = models.ManyToManyField('self', blank=True, null=True)
 
 
     def __str__(self):
