@@ -1,12 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import EngWord, ExampleSentence, WrittingQuiz, WrittingAnswer
-from .forms import UploadEngWord, ReviseDetail, WrittingForm, SignUpForm
+from .models import EngWord, ExampleSentence, WrittingQuiz, WrittingAnswer, Favorite
+from .forms import UploadEngWord, ReviseDetail, WrittingForm, SignUpForm, LoginForm
 from .llm_config import get_llm, example_sentence, writingquiz_llm, get_llm_writting, getllm_eval_wr, llm_eval_wr
 from random import sample, choice
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
+from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 import re
 
 def index(request):
@@ -30,24 +34,22 @@ def signup(request):
         form = SignUpForm()
     return render(request, "word_learning/signup.html", {"form": form})
 
+class LoginView(BaseLoginView):
+    form_class = LoginForm
+    template_name = "word_learning/login.html"
+
+class LogoutView(BaseLogoutView):
+    success_url = reverse_lazy("index")
 
 
-def home(request):
-    words = EngWord.objects.filter(star=True).order_by('eng_word')
-    return render(request, "word_learning/home.html", {"words":words})
+@login_required
+def favorite_words(request):
+    words = EngWord.objects.filter(favorite__user=request.user)
+    context = {
+        'words':words
+    }
+    return render(request, "word_learning/favorite_word.html", context)
 
-def upload_word(request):
-    if request.method == "POST":
-        form_eng = UploadEngWord(request.POST)
-        
-        if form_eng.is_valid():
-            form_eng.save() 
-            return redirect("home")
-    else:
-        form_eng = UploadEngWord()
-        
-    
-    return render(request, "word_learning/upload_eng.html", {"form_eng":form_eng})
 
 
 
@@ -90,9 +92,9 @@ def word_detail(request, pk):
 
     
     return render(request, "word_learning/word_detail.html", context)
-
+@login_required
 def word_quiz(request):
-    word_ids = list(EngWord.objects.values_list('id', flat=True))
+    word_ids = list(EngWord.objects.filter(cefr = request.user.cefr).values_list('id', flat=True))
 
     answer_id = choice(word_ids)
     answer_word = EngWord.objects.get(id=answer_id)
@@ -164,12 +166,13 @@ def writting_quiz(request):
         llm = get_llm_writting()
         quiz = writingquiz_llm(llm)
         instance = WrittingQuiz(
+            user=request.user,
             quiz = quiz,
             llm_quiz = True
         )
         instance.save()
     
-    all_quiz = WrittingQuiz.objects.all().order_by('-created_at')
+    all_quiz = WrittingQuiz.objects.filter(user=request.user).order_by('-created_at')
     paginator = Paginator(all_quiz, 10)
     page_number = request.GET.get('page', 1)
     quiz_page = paginator.get_page(page_number)

@@ -1,7 +1,7 @@
 {% extends "word_learning/base.html" %}
 {% block content %}
 
-<form method="POST" action="{% url 'writting_quiz' %}"></form>
+<form method="POST" action="{% url 'writting_quiz' %}">
     {% csrf_token %}
     <button type="submit" name="writting_quiz">Generate new writting quiz</button>
 </form>

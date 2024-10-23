@@ -5,8 +5,11 @@ from . import views
 urlpatterns = [
     path("", views.index, name="index"),
     path("signup", views.signup, name="signup"),
-    path("home", views.home, name="home"),
-    path("upload_word", views.upload_word, name="upload_word"),
+    path("login", views.LoginView.as_view(), name="login"),
+    path("logout", views.LogoutView.as_view(), name="logout"),
+    path("favorite_words", views.favorite_words, name="favorite_words"),
+  
+    
     path("word_detail/<int:pk>", views.word_detail, name="word_detail"),
     path("word_quiz", views.word_quiz, name="word_quiz"),
     path("result", views.result, name='result'),
@@ -20,4 +23,5 @@ urlpatterns = [
     path("error_writting", views.error_writting, name="error_writting"),
     path("makesure_score", views.makesure_score, name="makesure_score"),
     path("answer_history/<int:quiz_id>", views.answer_history, name="answer_history"),
+
 ]
