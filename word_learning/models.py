@@ -1,6 +1,7 @@
 from django.db import models
 from django.apps import apps
 from django.contrib import auth
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -14,7 +15,7 @@ from django.contrib.auth.base_user import BaseUserManager
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, username, password, **extra_fields):
+    def _create_user(self, email, password, **extra_fields):
         """
         Create and save a user with the given email, and password.
         """
@@ -24,17 +25,17 @@ class UserManager(BaseUserManager):
         # Lookup the real model class from the global app registry so this
         # manager method can be used in migrations. This is fine because
         # managers are by definition working on the real model.
-        user = self.model(email=email, username=username, **extra_fields)
+        user = self.model(email=email,  **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, username, password=None, **extra_fields):
+    def create_user(self, email,  password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, username=username, password=password, **extra_fields)
+        return self._create_user(email,  password=password, **extra_fields)
 
-    def create_superuser(self, email, username, password, **extra_fields):
+    def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -43,7 +44,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(email=email,username=username, password=password, **extra_fields)
+        return self._create_user(email=email, password=password, **extra_fields)
 
 #migrateするときにエラーが出るなら、settings.pyのINSTALLED_APPSのdjango.contrib.adminをコメントアウトして、migrateし、再度追加することで解決しました
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -96,7 +97,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def clean(self):
         self.email = self.__class__.objects.normalize_email(self.email)
-        
+
     def get_full_name(self):
         full_name = "%s %s" % (self.first_name, self.last_name)
         return full_name.strip()
@@ -138,17 +139,21 @@ class EngWord(models.Model):
     synonyms = models.ManyToManyField('self', blank=True, null=True)
     antonyms = models.ManyToManyField('self', blank=True, null=True)
     cefr = models.CharField(max_length=2, blank=True, null=True, choices=CEFR_CHOICES)
-    star = models.BooleanField(default=False)
-
 
     def __str__(self):
         return self.eng_word 
     
+class Favorite(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    word = models.ForeignKey(EngWord, on_delete=models.CASCADE)
+
 class ExampleSentence(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     sentence = models.CharField(max_length=60)
     eng_word = models.ForeignKey(EngWord, on_delete=models.CASCADE)
 
 class WrittingQuiz(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
     quiz = models.CharField(max_length=1000)
     llm_quiz = models.BooleanField(default=False) #True means created by llm
     highest_score = models.PositiveIntegerField(blank=True, null=True)
@@ -156,6 +161,7 @@ class WrittingQuiz(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 class WrittingAnswer(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     quiz = models.ForeignKey(WrittingQuiz, on_delete=models.CASCADE)
     answer = models.CharField(max_length=10000)
     score = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)

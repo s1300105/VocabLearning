@@ -10,9 +10,16 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-<div class="h2">Welcom {{user.first_name}} {{user.last_name}}</div>
-<a href="{% url 'home' %}">Go to Homepage</a>
+<div class="h2">Welcome {{user.first_name}} {{user.last_name}}</div>
+<a href="{% url 'favorite_words' %}">Go to Your Word list</a>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Logout</button>
+</form>
+
 {% else %}
 <a href="{% url 'signup' %}" class="btn btn-primary">Signup</a>
+<a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+
 {% endif %}
 {% endblock %}

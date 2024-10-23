@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from django import forms
 from .models import EngWord, WrittingAnswer, CustomUser
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 
 class UploadEngWord(ModelForm):
@@ -45,4 +45,11 @@ class SignUpForm(UserCreationForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
-
+class LoginForm(AuthenticationForm):
+    class Meta:
+        model=CustomUser
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = 'Email'  # usernameフィールドのラベルをEmailに変更
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'

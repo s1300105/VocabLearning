@@ -96,6 +96,10 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'word_learning.CustomUser'
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "index"
+LOGOUT_REDIRECT_URL = "login"
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
