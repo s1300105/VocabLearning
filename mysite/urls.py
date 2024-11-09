@@ -16,9 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.views.generic import RedirectView
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('word_learning.urls'))
+    path('word_learning/', include('word_learning.urls')),
+    #path('english_conversation/', include("english_conversation.urls")),
+    path('video_chat/', include('video_chat.urls')),
+    path('favicon.ico', RedirectView.as_view(
+        url=staticfiles_storage.url('favicon.ico'),
+        permanent=False
+    )),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

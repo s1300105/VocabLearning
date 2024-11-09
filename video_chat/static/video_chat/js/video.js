@@ -291,18 +291,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
-// 既存のjoinRoom関数
+// joinRoom関数を修正
 async function joinRoom() {
     const roomName = document.getElementById('room-name').value;
+    const userType = document.getElementById('user-type').value; // HTMLに追加必要
+
+    
+    
     if (!roomName) {
         alert('Please enter a room name');
         return;
     }
 
+    if (!userType) {
+        alert('Please select user type');
+        return;
+    }
+
     joinButton.disabled = true;
-    log(`Attempting to join room: ${roomName}`);
+    log(`Attempting to join room: ${roomName} as ${userType}`);
 
     try {
         const response = await fetch('/video_chat/make_token/', {
@@ -311,7 +318,10 @@ async function joinRoom() {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ room_name: roomName })
+            body: JSON.stringify({ 
+                room_name: roomName,
+                user_type: userType
+            })
         });
 
         log(`Response status: ${response.status}`);
@@ -340,6 +350,8 @@ async function joinRoom() {
         joinButton.disabled = false;
     }
 }
+
+
 
 // ルーム接続を処理する関数
 function handleRoomConnection(room) {
