@@ -1,0 +1,35 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recordings Player</title>
+    <link rel="stylesheet" href="{% static 'video_chat/css/player.css' %}">
+</head>
+<body>
+    <div class="recording-player-container">
+        <h1>Recordings</h1>
+
+        {% if error_message %}
+            <div class="error-message">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <div id="recording-players" class="players-list" 
+             data-recordings='{{ recordings_json|safe }}'
+             data-transcript="{{ transcript|default_if_none:'' }}">
+        </div>
+
+        {% if not recordings_json %}
+            <div class="no-recordings">
+                No recordings available.
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="{% static 'video_chat/js/recording_player.js' %}"></script>
+</body>
+</html>

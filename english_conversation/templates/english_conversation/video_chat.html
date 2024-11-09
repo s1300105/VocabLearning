@@ -1,0 +1,402 @@
+<!-- video_chat.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>English Conversation with AI Assistant</title>
+    <script src="https://sdk.twilio.com/js/video/releases/2.17.0/twilio-video.min.js"></script>
+    <style>
+        /* 既存のスタイルはそのまま維持 */
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="video-section">
+            <div class="controls">
+                <input type="text" id="room-name" placeholder="Enter room name">
+                <button id="join-button">Join Room</button>
+                <button onclick="leaveRoom()" id="leave-button" style="display: none;">Leave Room</button>
+
+                <div class="media-controls" style="display: none;">
+                    <button onclick="toggleVideo()" id="video-button">Stop Video</button>
+                    <button onclick="toggleAudio()" id="audio-button">Mute Audio</button>
+                </div>
+            </div>
+            <div id="video-container" class="video-container">
+                <div id="local-video"></div>
+                <div id="remote-videos"></div>
+            </div>
+            <canvas id="audio-visualizer" class="audio-visualizer"></canvas>
+        </div>
+
+        <div class="feedback-section">
+            <h2>AI Feedback</h2>
+            <div id="feedback-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let room;
+        let ws = null;
+        let localStream = null;
+        let mediaRecorder = null;
+        let audioContext = null;
+        let audioProcessor = null;
+
+        // WebSocket接続の設定
+        function connectWebSocket(roomName) {
+            const wsScheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const wsUrl = `${wsScheme}${window.location.host}/ws/lesson/${roomName}/`;
+            
+            console.log('Connecting to WebSocket:', wsUrl);
+            
+            return new Promise((resolve, reject) => {
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    console.log('WebSocket connection established');
+                    resolve(ws);
+                };
+                
+                ws.onmessage = (event) => {
+                    console.log('Received WebSocket message:', event.data);
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'ai_feedback') {
+                            displayFeedback(data.data);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    reject(error);
+                };
+                
+                ws.onclose = () => {
+                    console.log('WebSocket connection closed');
+                };
+            });
+        }
+
+        // MediaDevices APIの初期化と権限取得を分離
+        async function initializeMediaDevices() {
+            try {
+                // 先にユーザーメディアの権限を取得
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: { width: 640, height: 480 }
+                });
+                
+                // 成功したらストリームを返す
+                return stream;
+            } catch (error) {
+                console.error('Error accessing media devices:', error);
+                if (error.name === 'NotAllowedError') {
+                    alert('Please allow access to camera and microphone to use this feature.');
+                } else if (error.name === 'NotFoundError') {
+                    alert('No camera or microphone found. Please check your devices.');
+                } else {
+                    alert(`Failed to access media devices: ${error.message}`);
+                }
+                throw error;
+            }
+        }
+
+
+
+        // ビデオ関連の機能
+        async function setupLocalVideo(stream) {
+            try {
+                const localVideo = document.createElement('video');
+                localVideo.id = 'local-video-stream';
+                localVideo.autoplay = true;
+                localVideo.playsInline = true;
+                localVideo.muted = true; // 自分の音声をミュートに
+
+                const localVideoContainer = document.getElementById('local-video');
+                // 既存の要素をクリア
+                localVideoContainer.innerHTML = '';
+                localVideoContainer.appendChild(localVideo);
+
+                localVideo.srcObject = stream;
+                await localVideo.play(); // 明示的に再生を開始
+
+                return localVideo;
+            } catch (error) {
+                console.error('Error setting up local video:', error);
+                throw error;
+            }
+        }
+
+
+        // Base64エンコーディングのヘルパー関数
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+
+        // 音声処理の設定
+        async function setupAudioProcessing(stream) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                await audioContext.audioWorklet.addModule('/static/english_conversation/js/audio-processor.js');
+                
+                const source = audioContext.createMediaStreamSource(stream);
+                audioProcessor = new AudioWorkletNode(audioContext, 'audio-processor');
+                
+                console.log('Setting up audio processor');
+                
+                audioProcessor.port.onmessage = (event) => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        try {
+                            console.log('Sending audio data', event.data.length);
+                            
+                            // Int16Arrayに変換
+                            const audioData = new Int16Array(event.data);
+                            
+                            // Base64エンコーディング
+                            const base64Data = arrayBufferToBase64(audioData.buffer);
+                            
+                            ws.send(JSON.stringify({
+                                type: 'audio',
+                                audio: base64Data
+                            }));
+                        } catch (error) {
+                            console.error('Error processing audio data:', error);
+                        }
+                    }
+                };
+                
+                source.connect(audioProcessor);
+                console.log('Audio processing setup complete');
+                
+                return audioProcessor;
+            } catch (error) {
+                console.error('Error setting up audio processing:', error);
+                throw error;
+            }
+        }
+
+        // ルーム参加処理
+        async function joinRoom() {
+            const roomName = document.getElementById('room-name').value;
+            if (!roomName) {
+                alert('Please enter a room name');
+                return;
+            }
+
+            try {
+                // 1. メディアデバイスの初期化
+                const mediaStream = await initializeMediaDevices();
+                
+                // 2. WebSocket接続
+                await connectWebSocket(roomName);
+                
+                // 3. Twilioトークンの取得
+                const response = await fetch('/english_conversation/generate_token/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ room_name: roomName })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                // 4. ローカルビデオのセットアップ
+                await setupLocalVideo(mediaStream);
+                
+                // 5. 音声処理のセットアップ
+                await setupAudioProcessing(mediaStream);
+                
+                // 6. Twilioルームへの接続
+                room = await Twilio.Video.connect(data.token, {
+                    name: roomName,
+                    tracks: mediaStream.getTracks(),
+                    video: { width: 640, height: 480 }
+                });
+
+                // 7. UI更新とイベントリスナーの設定
+                document.getElementById('join-button').style.display = 'none';
+                document.getElementById('leave-button').style.display = 'inline-block';
+                document.querySelector('.media-controls').style.display = 'block';
+                document.getElementById('room-name').disabled = true;
+
+                // 8. 参加者の設定
+                room.participants.forEach(participantConnected);
+                room.on('participantConnected', participantConnected);
+                room.on('participantDisconnected', participantDisconnected);
+
+            } catch (error) {
+                console.error('Error joining room:', error);
+                await leaveRoom();
+                throw error;
+            }
+        }
+        // 参加者接続時の処理
+        function participantConnected(participant) {
+            const container = document.createElement('div');
+            container.id = participant.sid;
+            container.className = 'remote-video';
+            
+            participant.tracks.forEach(publication => {
+                if (publication.isSubscribed) {
+                    trackSubscribed(container, publication.track);
+                }
+            });
+            
+            participant.on('trackSubscribed', track => trackSubscribed(container, track));
+            participant.on('trackUnsubscribed', trackUnsubscribed);
+            
+            document.getElementById('remote-videos').appendChild(container);
+        }
+
+        function trackSubscribed(container, track) {
+            const element = track.attach();
+            container.appendChild(element);
+        }
+
+        function trackUnsubscribed(track) {
+            track.detach().forEach(element => element.remove());
+        }
+
+        function participantDisconnected(participant) {
+            const container = document.getElementById(participant.sid);
+            if (container) {
+                container.remove();
+            }
+        }
+
+        // メディアコントロール
+        function toggleVideo() {
+            if (room) {
+                const videoTrack = Array.from(room.localParticipant.videoTracks.values())[0].track;
+                if (videoTrack.isEnabled) {
+                    videoTrack.disable();
+                    document.getElementById('video-button').textContent = 'Start Video';
+                } else {
+                    videoTrack.enable();
+                    document.getElementById('video-button').textContent = 'Stop Video';
+                }
+            }
+        }
+
+        function toggleAudio() {
+            if (room) {
+                const audioTrack = Array.from(room.localParticipant.audioTracks.values())[0].track;
+                if (audioTrack.isEnabled) {
+                    audioTrack.disable();
+                    document.getElementById('audio-button').textContent = 'Unmute Audio';
+                } else {
+                    audioTrack.enable();
+                    document.getElementById('audio-button').textContent = 'Mute Audio';
+                }
+            }
+        }
+
+        // ルーム退出処理
+        // エラー時のクリーンアップを改善
+        async function leaveRoom() {
+            try {
+                if (room) {
+                    room.disconnect();
+                    room = null;
+                }
+                
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+                
+                if (audioContext) {
+                    await audioContext.close();
+                    audioContext = null;
+                }
+                
+                if (audioProcessor) {
+                    audioProcessor.disconnect();
+                    audioProcessor = null;
+                }
+                
+                if (ws) {
+                    ws.close();
+                    ws = null;
+                }
+
+                // UIのリセット
+                document.getElementById('local-video').innerHTML = '';
+                document.getElementById('remote-videos').innerHTML = '';
+                document.getElementById('join-button').style.display = 'inline-block';
+                document.getElementById('leave-button').style.display = 'none';
+                document.querySelector('.media-controls').style.display = 'none';
+                document.getElementById('room-name').disabled = false;
+                
+            } catch (error) {
+                console.error('Error leaving room:', error);
+                throw error;
+            }
+        }
+
+        // フィードバック表示
+        function displayFeedback(feedback) {
+            console.log('Displaying feedback:', feedback);
+            const container = document.getElementById('feedback-container');
+            
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'feedback-item';
+            
+            switch (feedback.type) {
+                case 'analysis':
+                    feedbackDiv.innerHTML = `
+                        <div class="feedback-header">Analysis</div>
+                        <div>${feedback.content.text}</div>
+                        ${feedback.content.analysis ? 
+                            `<div class="analysis">${feedback.content.analysis}</div>` : ''}
+                    `;
+                    break;
+                    
+                case 'suggestion':
+                    feedbackDiv.classList.add('suggestion');
+                    feedbackDiv.innerHTML = `
+                        <div class="feedback-header">Suggestion</div>
+                        <div>${feedback.content}</div>
+                    `;
+                    break;
+                    
+                case 'greeting':
+                    feedbackDiv.innerHTML = `
+                        <div class="feedback-header">AI Assistant</div>
+                        <div>${feedback.content}</div>
+                    `;
+                    break;
+                    
+                default:
+                    feedbackDiv.innerHTML = `
+                        <div class="feedback-header">Feedback</div>
+                        <div>${JSON.stringify(feedback)}</div>
+                    `;
+            }
+            
+            container.insertBefore(feedbackDiv, container.firstChild);
+        }
+
+        // イベントリスナーの設定
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('join-button').addEventListener('click', joinRoom);
+        });
+
+        // クリーンアップ
+        window.addEventListener('beforeunload', () => {
+            leaveRoom();
+        });
+    </script>
+</body>
+</html>
