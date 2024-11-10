@@ -58,72 +58,79 @@ def find_or_create_room(room_name):
         logger.error("Twilio client is not initialized")
         raise Exception("Twilio client is not initialized")
     
-    
     def set_recording_rules(room_sid):
         """録音ルールを設定する補助関数"""
         try:
-            logger.info(f"=== Setting recording rules for room {room_sid} ===")
+            logger.info(f"Setting recording rules for room {room_sid}")
             
-            # 録音ルールを単純化
             Rules = [
                 {
                     'type': "include",
                     'kind': "audio",
-                    'publisher': "student"  # 単純に'student'に一致
+                    'publisher': "student"
                 }
             ]
             
-            logger.info(f"Attempting to set new rules: {Rules}")
+            # キャッシュキーを作成
+            cache_key = f'recording_rules_{room_sid}'
             
+            # 既存のルールをチェック
+            existing_rules = cache.get(cache_key)
+            if existing_rules == Rules:
+                logger.info("Recording rules already set correctly")
+                return True
+                
             # ルールを更新
             result = twilio_client.video.rooms(room_sid).recording_rules.update(rules=Rules)
-            logger.info(f"Rule update response: {result.rules}")
             
-            # 更新後のルールを確認して検証
-            updated_rules = twilio_client.video.rooms(room_sid).recording_rules.fetch()
-            logger.info(f"Verified rules after update: {updated_rules.rules}")
+            # 新しいルールをキャッシュ
+            cache.set(cache_key, Rules, timeout=3600)
             
-            # publisherパラメータを使用して検証
-            if any(rule.get('publisher') == 'student' for rule in updated_rules.rules):
-                logger.info("Recording rules successfully set to record only students")
-                return True
-            else:
-                logger.error("Failed to set recording rules correctly - publisher filter is missing")
-                return False
+            return True
                 
         except Exception as e:
             logger.error(f"Failed to set recording rules: {str(e)}")
-            logger.exception("Full traceback:")
             return False
 
-
-
     try:
-        logger.info(f"=== Finding or creating room: {room_name} ===")
+        logger.info(f"Finding or creating room: {room_name}")
+
+        # キャッシュキーを作成
+        room_cache_key = f'room_{room_name}'
         
+        # キャッシュされたルーム情報を確認
+        cached_room = cache.get(room_cache_key)
+        if cached_room:
+            try:
+                # キャッシュされたルームが有効か確認
+                room = twilio_client.video.rooms(cached_room['sid']).fetch()
+                if room.status == 'completed':
+                    cache.delete(room_cache_key)
+                else:
+                    return room
+            except Exception:
+                cache.delete(room_cache_key)
+
         try:
             # 既存のルームを探す
             room = twilio_client.video.rooms(room_name).fetch()
+            
+            # ルームが完了状態の場合は新しいルームを作成
+            if room.status == 'completed':
+                raise TwilioRestException(status=404, message="Room completed")
+                
             logger.info(f"Found existing room: {room_name} (SID: {room.sid})")
             
-            # 既存のルームが完了状態の場合は新しいルームを作成
-            if room.status == 'completed':
-                logger.info(f"Room {room_name} is completed, creating new room")
-                raise TwilioRestException(code=20404)  # Room not foundと同じ処理をするため
-            
-            logger.info(f"Room status: {room.status}")
-            logger.info(f"Room type: {room.type}")
-            
-            # 既存のルームでも録音ルールを設定
-            if not set_recording_rules(room.sid):
-                logger.warning(f"Failed to update recording rules for existing room {room_name}")
+            # ルーム情報をキャッシュ
+            cache.set(room_cache_key, {
+                'sid': room.sid,
+                'status': room.status
+            }, timeout=3600)
             
             return room
             
         except TwilioRestException as e:
-            if e.code == 20404:  # Room not found
-                logger.info(f"Room {room_name} not found, creating new room...")
-                
+            if e.status == 404:
                 # 新しいルームを作成
                 room = twilio_client.video.rooms.create(
                     unique_name=room_name,
@@ -132,17 +139,21 @@ def find_or_create_room(room_name):
                     status_callback=settings.TWILIO_STATUS_CALLBACK_URL,
                     video_codecs=['VP8', 'H264']
                 )
+                
                 logger.info(f"Created new room: {room_name} (SID: {room.sid})")
-                logger.info(f"New room status: {room.status}")
-                logger.info(f"New room type: {room.type}")
-
-                # 新しいルームに録音ルールを設定
+                
+                # 録音ルールを設定
                 if not set_recording_rules(room.sid):
-                    logger.error(f"Failed to set recording rules for new room {room_name}")
-
+                    logger.warning(f"Failed to set recording rules for new room {room_name}")
+                
+                # ルーム情報をキャッシュ
+                cache.set(room_cache_key, {
+                    'sid': room.sid,
+                    'status': room.status
+                }, timeout=3600)
+                
                 return room
             else:
-                logger.error(f"Unexpected Twilio error: {str(e)}")
                 raise
                 
     except Exception as e:
@@ -351,6 +362,11 @@ def handle_recording_complete(request):
         
         logger.info(f"Handling recording complete for room: {room_sid}")
         
+        # 古いキャッシュをクリア
+        cache_key = f'room_recordings_{room_sid}'
+        cache.delete(cache_key)
+
+
         # 録音データが利用可能になるまでの待機
         time.sleep(5)
         

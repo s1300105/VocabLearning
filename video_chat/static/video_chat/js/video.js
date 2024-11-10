@@ -3,6 +3,7 @@
 let room = null;
 let joinButton;
 let leaveButton;
+let currentUserType = null;  // グローバル変数として追加
 
 
 function log(message) {
@@ -179,7 +180,19 @@ async function leaveRoom2() {
     try {
         const roomSid = room.sid;
         log(`Leaving room to transcribe with SID ${roomSid}`);
+
+        // teacherの場合は直接video_lessonページに戻る
+        if (currentUserType === 'teacher') {
+            log('Teacher detected, redirecting to video lesson page');
+            room.disconnect();
+            room = null;
+            window.location.href = '/video_chat/video_lesson/';
+            return;
+        }
+
         showLoading();
+
+        log('Student detected, processing recording and transcription');
 
         // 部屋から退出
         log('Disconnecting room...');
@@ -273,8 +286,18 @@ document.addEventListener('DOMContentLoaded', function() {
     joinButton = document.getElementById('join-button');
     leaveButton = document.getElementById('leave-button');
     
+    // ユーザータイプの選択をモニター
+    const userTypeSelect = document.getElementById('user-type');
+    if (userTypeSelect) {
+        userTypeSelect.addEventListener('change', function(e) {
+            currentUserType = e.target.value;
+            log(`User type changed to: ${currentUserType}`);
+        });
+    }
+    
     if (joinButton) {
         log('Join button found');
+        joinButton.addEventListener('click', joinRoom);
     } else {
         log('Warning: Join button not found');
     }
@@ -286,7 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
         log('Warning: Leave button not found');
     }
 });
-
 
 
 
@@ -307,6 +329,12 @@ async function joinRoom() {
         alert('Please select user type');
         return;
     }
+
+
+    // ユーザータイプを保存
+    currentUserType = userType;
+    log(`Current user type set to: ${currentUserType}`);
+
 
     joinButton.disabled = true;
     log(`Attempting to join room: ${roomName} as ${userType}`);
