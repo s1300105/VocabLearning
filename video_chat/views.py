@@ -30,8 +30,177 @@ import time
 from openai import OpenAI
 from moviepy.editor import VideoFileClip
 from django.core.cache import cache
+from django.core.cache import cache
+from django.db import transaction
+import time
 
 
+
+
+class RoomManager:
+    def __init__(self, twilio_client):
+        self.twilio_client = twilio_client
+        self.lock_timeout = 30
+
+    def _cleanup_existing_room(self, room_name):
+        """既存のルームをクリーンアップする"""
+        try:
+            # まず既存のルームを探す
+            rooms = self.twilio_client.video.rooms.list(unique_name=room_name, status='in-progress')
+            
+            for room in rooms:
+                try:
+                    logger.info(f"Completing room: {room.sid}")
+                    # ルームを完了状態に更新
+                    self.twilio_client.video.rooms(room.sid).update(status='completed')
+                    # キャッシュをクリア
+                    cache.delete(f'room_{room_name}')
+                    cache.delete(f'recording_rules_{room.sid}')
+                    # 完了を待機
+                    time.sleep(2)
+                except Exception as e:
+                    logger.error(f"Error completing room {room.sid}: {str(e)}")
+
+            # 完了後、さらに待機してTwilioのシステムに変更が反映されるのを待つ
+            time.sleep(3)
+            
+        except Exception as e:
+            logger.error(f"Error in cleanup: {str(e)}")
+            # クリーンアップの失敗は致命的ではないので、例外は発生させない
+
+    def get_or_create_room(self, room_name, max_retries=3, delay=1):
+        """ロックを使用して部屋を取得または作成"""
+        # まず既存のアクティブなルームを確認
+        try:
+            existing_room = self.twilio_client.video.rooms(room_name).fetch()
+            if existing_room.status != 'completed':
+                logger.info(f"Found active room: {room_name}")
+                # 録音ルールを確認・設定
+                self._ensure_recording_rules(existing_room.sid)
+                return existing_room
+        except TwilioRestException as e:
+            if e.code != 20404:  # Room not found以外のエラー
+                logger.error(f"Unexpected Twilio error: {str(e)}")
+            # Room not foundの場合は続行
+
+        lock_key = f'room_lock_{room_name}'
+        last_error = None
+        
+        for attempt in range(max_retries):
+            if cache.add(lock_key, True, self.lock_timeout):
+                try:
+                    # 既存のルームをクリーンアップ
+                    self._cleanup_existing_room(room_name)
+
+                    # 新しいルーム作成を試みる
+                    room = self._create_new_room(room_name)
+                    if room:
+                        return room
+                finally:
+                    cache.delete(lock_key)
+            else:
+                logger.info(f"Waiting for lock on room: {room_name} (attempt {attempt + 1})")
+                time.sleep(delay)
+
+                # ロック待機中に他のプロセスが作成した可能性をチェック
+                try:
+                    room = self.twilio_client.video.rooms(room_name).fetch()
+                    if room.status != 'completed':
+                        logger.info(f"Found room created by another process: {room_name}")
+                        self._ensure_recording_rules(room.sid)
+                        return room
+                except TwilioRestException:
+                    pass
+
+        # すべての試行が失敗した場合は、最後にもう一度ルーム作成を試みる
+        logger.warning(f"Failed to acquire lock, attempting final room creation: {room_name}")
+        try:
+            return self._create_new_room(room_name)
+        except Exception as e:
+            last_error = e
+            logger.error(f"Final room creation attempt failed: {str(e)}")
+
+        if last_error:
+            raise last_error
+        raise Exception("Failed to create or acquire room")
+
+    def _create_new_room(self, room_name):
+        """新しいルームを作成する"""
+        for create_attempt in range(3):
+            try:
+                room = self.twilio_client.video.rooms.create(
+                    unique_name=room_name,
+                    type="group",
+                    record_participants_on_connect=True,
+                    status_callback=settings.TWILIO_STATUS_CALLBACK_URL,
+                    video_codecs=['VP8', 'H264']
+                )
+                
+                logger.info(f"Created new room: {room_name} (SID: {room.sid})")
+                
+                # 録音ルールを設定
+                self._set_recording_rules(room.sid)
+                
+                # キャッシュを更新
+                cache.set(f'room_{room_name}', {
+                    'sid': room.sid,
+                    'status': room.status
+                }, timeout=3600)
+                
+                return room
+                
+            except TwilioRestException as e:
+                if e.code == 53113:  # Room exists エラー
+                    logger.warning(f"Room still exists, retrying after cleanup (attempt {create_attempt + 1})")
+                    time.sleep(2)
+                    continue
+                raise
+                
+        return None
+
+    def _set_recording_rules(self, room_sid):
+        """録音ルールを設定する"""
+        rules = [
+            {
+                'type': "include",
+                'kind': "audio",
+                'publisher': "student"
+            }
+        ]
+        
+        try:
+            # ルールを設定する前に少し待機
+            time.sleep(1)
+            
+            # ルールを更新
+            self.twilio_client.video.rooms(room_sid).recording_rules.update(rules=rules)
+            
+            # 更新後のルールを確認
+            updated_rules = self.twilio_client.video.rooms(room_sid).recording_rules.fetch()
+            if updated_rules and updated_rules.rules:
+                logger.info(f"Successfully set recording rules for room: {room_sid}")
+                # キャッシュにルールを保存
+                cache.set(f'recording_rules_{room_sid}', rules, timeout=3600)
+            else:
+                raise Exception("Failed to verify recording rules")
+                
+        except Exception as e:
+            logger.error(f"Error setting recording rules: {str(e)}")
+            raise
+
+    def _ensure_recording_rules(self, room_sid):
+        """録音ルールが設定されているか確認し、必要に応じて設定する"""
+        try:
+            # キャッシュされたルールを確認
+            cached_rules = cache.get(f'recording_rules_{room_sid}')
+            if not cached_rules:
+                # キャッシュにない場合は設定を確認して必要なら設定
+                current_rules = self.twilio_client.video.rooms(room_sid).recording_rules.fetch()
+                if not current_rules or not current_rules.rules:
+                    self._set_recording_rules(room_sid)
+        except Exception as e:
+            logger.error(f"Error ensuring recording rules: {str(e)}")
+            # エラーは無視してルームの使用を継続
 
 
 
@@ -217,48 +386,63 @@ def make_token(request):
     try:
         data = json.loads(request.body)
         room_name = data.get('room_name')
-        user_type = data.get('user_type')  # 'student' または 'teacher'
+        user_type = data.get('user_type')
         
-        if not room_name:
-            return JsonResponse({'error': 'Room name is required'}, status=400)
-            
+        if not room_name or not user_type:
+            return JsonResponse({
+                'error': 'Invalid parameters'
+            }, status=400)
+
+        # ルーム名とユーザータイプの検証
         if not room_name.isalnum():
-            return JsonResponse({'error': 'Room name must be alphanumeric'}, status=400)
+            return JsonResponse({
+                'error': 'Room name must be alphanumeric'
+            }, status=400)
             
         if user_type not in ['student', 'teacher']:
-            return JsonResponse({'error': 'Invalid user type'}, status=400)
+            return JsonResponse({
+                'error': 'Invalid user type'
+            }, status=400)
+
+        # キャッシュをチェック
+        cache_key = f'room_token_{room_name}_{user_type}'
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return JsonResponse(cached_data)
+
+        # 新しいルームを作成または取得
+        room_manager = RoomManager(twilio_client)
+        
+        try:
+            room = room_manager.get_or_create_room(room_name)
+            token, identity = get_access_token(room_name, user_type=user_type)
             
-        # ルームの作成または取得
-        room = find_or_create_room(room_name)
-        
-        # トークンの生成（user_typeを含める）
-        token, identity = get_access_token(room_name, user_type=user_type)
-        
-        # JWT トークンの生成と変換
-        jwt_token = token.to_jwt()
-        if isinstance(jwt_token, bytes):
-            jwt_token = jwt_token.decode('utf-8')
+            response_data = {
+                'token': token.to_jwt().decode('utf-8') if isinstance(token.to_jwt(), bytes) else token.to_jwt(),
+                'room': {
+                    'name': room_name,
+                    'sid': room.sid,
+                    'status': room.status
+                },
+                'identity': identity
+            }
             
-        return JsonResponse({
-            'token': jwt_token,
-            'room': {
-                'name': room_name,
-                'sid': room.sid,
-                'status': room.status
-            },
-            'identity': identity
-        })
-        
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'error': 'Invalid JSON data'
-        }, status=400)
-        
+            # レスポンスをキャッシュ（短い時間）
+            cache.set(cache_key, response_data, timeout=60)
+            
+            return JsonResponse(response_data)
+            
+        except TwilioRestException as e:
+            logger.error(f"Twilio error: {str(e)}")
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+            
     except Exception as e:
-        logger.error(f"Error in generate_token: {str(e)}")
+        logger.error(f"Error in make_token: {str(e)}")
         return JsonResponse({
-            'error': 'Internal server error',
-            'details': str(e)
+            'error': str(e)
         }, status=500)
 
 
@@ -272,80 +456,56 @@ def get_room_recordings(room_sid):
         raise Exception("Twilio client is not initialized")
     
     try:
-        # 録音ルールを再確認
-        rules = twilio_client.video.rooms(room_sid).recording_rules.fetch()
-        logger.info(f"Current recording rules: {rules.rules}")
-        
         # 現在のセッションの開始時刻を取得
-        try:
-            room = twilio_client.video.rooms(room_sid).fetch()
-            session_start = room.date_created
-            logger.info(f"Current session started at: {session_start}")
-        except Exception as e:
-            logger.error(f"Failed to get room details: {str(e)}")
-            session_start = None
+        room = twilio_client.video.rooms(room_sid).fetch()
+        session_start = room.date_created
+        logger.info(f"Current session started at: {session_start}")
 
-        # まず全ての録音を取得
+        # 録音を取得
         recordings = twilio_client.video.recordings.list(
-            grouping_sid=room_sid
+            grouping_sid=room_sid,
+            status='completed'
         )
         
-        logger.info(f"Found {len(recordings)} total recordings for room {room_sid}")
+        # 最新の録音のみを処理
+        latest_recording = None
+        latest_date = None
         
-        # 音声データのURLを取得
-        media_files = []
         for recording in recordings:
+            if recording.type == 'audio':
+                if latest_date is None or recording.date_created > latest_date:
+                    latest_recording = recording
+                    latest_date = recording.date_created
+
+        if latest_recording:
             try:
-                # 処理中のステータスをログ
-                logger.debug(f"Recording {recording.sid} status: {recording.status}")
-                logger.debug(f"Recording type: {recording.type}")
-                logger.debug(f"Recording created at: {recording.date_created}")
+                media_url = latest_recording.links['media']
+                logger.debug(f"Processing latest recording {latest_recording.sid}")
                 
-                # 現在のセッションの録音のみを処理
-                if session_start and recording.date_created < session_start:
-                    logger.debug(f"Skipping recording {recording.sid} from previous session")
-                    continue
-
-                if recording.status != 'completed':
-                    logger.debug(f"Skipping recording {recording.sid} with status {recording.status}")
-                    continue
-
-                # 音声録音のみを処理
-                if recording.type == 'audio':
-                    try:
-                        media_url = recording.links['media']
-                        logger.debug(f"Got media URL for recording {recording.sid}")
-                        
-                        signed_url = get_signed_url(media_url)
-                        
-                        if signed_url:
-                            media_files.append({
-                                'url': signed_url,
-                                'duration': recording.duration if recording.duration else 0,
-                                'sid': recording.sid,
-                                'type': 'audio',
-                                'status': recording.status,
-                                'created_at': recording.date_created.isoformat()
-                            })
-                            logger.debug(f"Successfully added media file for recording {recording.sid}")
-                        else:
-                            logger.error(f"Failed to get signed URL for recording {recording.sid}")
-                    except AttributeError as e:
-                        logger.error(f"Missing attribute for recording {recording.sid}: {str(e)}")
-                    except Exception as e:
-                        logger.error(f"Error getting media URL for recording {recording.sid}: {str(e)}")
+                signed_url = get_signed_url(media_url)
+                
+                if signed_url:
+                    media_files = [{
+                        'url': signed_url,
+                        'duration': latest_recording.duration if latest_recording.duration else 0,
+                        'sid': latest_recording.sid,
+                        'type': 'audio',
+                        'status': latest_recording.status,
+                        'created_at': latest_recording.date_created.isoformat()
+                    }]
+                    logger.info(f"Successfully processed latest recording from current session")
+                    return media_files
+                else:
+                    logger.error(f"Failed to get signed URL for recording {latest_recording.sid}")
             except Exception as e:
-                logger.error(f"Error processing recording {recording.sid}: {str(e)}")
-                continue
-                
-        logger.info(f"Successfully processed {len(media_files)} audio files from current session")
-        return media_files
+                logger.error(f"Error processing recording {latest_recording.sid}: {str(e)}")
+        
+        return []
         
     except Exception as e:
         logger.error(f"Error in get_room_recordings: {str(e)}")
         logger.exception("Full traceback:")
         raise
-
 
 
 
@@ -356,6 +516,7 @@ def handle_recording_complete(request):
     try:
         data = json.loads(request.body)
         room_sid = data.get("RoomSid")
+        transcribe_requested = data.get("transcribe", False)
         
         if not room_sid:
             return JsonResponse({"error": "RoomSid is required"}, status=400)
@@ -366,12 +527,12 @@ def handle_recording_complete(request):
         cache_key = f'room_recordings_{room_sid}'
         cache.delete(cache_key)
 
-
         # 録音データが利用可能になるまでの待機
         time.sleep(5)
         
-        # 録音データを1回だけ取得
+        # 最新の録音データのみを取得
         media_files = get_room_recordings(room_sid)
+        
         if not media_files:
             return JsonResponse({
                 "status": "warning",
@@ -379,9 +540,63 @@ def handle_recording_complete(request):
                 "room_sid": room_sid
             })
 
-        # 録音データをキャッシュまたはセッションに保存
-        cache.set(f'room_recordings_{room_sid}', media_files, timeout=3600)  # 1時間キャッシュ
+        # 最新の録音データのみをキャッシュ
+        cache.set(cache_key, media_files, timeout=3600)
         
+        # 文字起こしが要求された場合、最新の録音のみを処理
+        if transcribe_requested and media_files:
+            try:
+                latest_audio = media_files[0]  # 最新の録音のみを処理
+                audio_url = latest_audio['url']
+                
+                # 音声ファイルの処理
+                recordings_dir = os.path.join(settings.MEDIA_ROOT, 'recordings')
+                os.makedirs(recordings_dir, exist_ok=True)
+                
+                # 一時ファイル名にタイムスタンプを追加して重複を防ぐ
+                timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                original_path = os.path.join(recordings_dir, f"{latest_audio['sid']}_{timestamp}_original.wav")
+                converted_path = os.path.join(recordings_dir, f"{latest_audio['sid']}_{timestamp}.wav")
+                
+                response = requests.get(audio_url, stream=True)
+                if response.status_code == 200:
+                    with open(original_path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+
+                    audio = AudioSegment.from_file(original_path)
+                    audio.export(converted_path, format='wav', parameters=["-ac", "1"])
+                    
+                    # 文字起こし処理
+                    OPENAI_API_KEY = settings.OPENAI_API_KEY
+                    client = OpenAI(api_key=OPENAI_API_KEY)
+
+                    with open(converted_path, "rb") as audio_file:
+                        transcript_response = client.audio.transcriptions.create(
+                            model="whisper-1",
+                            file=audio_file,
+                            response_format="text"
+                        )
+                        transcript = transcript_response
+
+                    # 一時ファイルを削除
+                    for path in [original_path, converted_path]:
+                        if os.path.exists(path):
+                            os.remove(path)
+                    
+                    return JsonResponse({
+                        "status": "success",
+                        "media_files": media_files,
+                        "room_sid": room_sid,
+                        "transcript": transcript
+                    })
+            except Exception as e:
+                logger.error(f"Error in transcription: {str(e)}")
+                return JsonResponse({
+                    "error": f"Transcription failed: {str(e)}"
+                }, status=500)
+
         return JsonResponse({
             "status": "success",
             "message": f"Found {len(media_files)} media files",

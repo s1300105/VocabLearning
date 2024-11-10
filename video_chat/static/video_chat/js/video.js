@@ -1,9 +1,117 @@
-// static/video_chat/js/video.js を更新
-
+// グローバル変数の定義
 let room = null;
 let joinButton;
 let leaveButton;
-let currentUserType = null;  // グローバル変数として追加
+let currentUserType = null;
+let connectionAttempts = 0;
+const MAX_RETRY_ATTEMPTS = 3;
+let isConnecting = false;
+
+// 接続状態を管理するクラス
+class ConnectionManager {
+    constructor() {
+        this.isConnecting = false;
+        this.currentRoom = null;
+        this.reconnectTimeout = null;
+    }
+
+    async connect(token, roomName, options = {}) {
+        if (this.isConnecting) {
+            log('Connection already in progress');
+            return null;
+        }
+
+        try {
+            this.isConnecting = true;
+            log('Initiating connection to room: ' + roomName);
+
+            const connectOptions = {
+                name: roomName,
+                audio: true,
+                video: { width: 640, height: 480 },
+                networkQuality: {
+                    local: 1,
+                    remote: 1
+                },
+                dominantSpeaker: true,
+                maxAudioBitrate: 16000,
+                preferredVideoCodecs: [{ codec: 'VP8', simulcast: true }],
+                ...options
+            };
+
+            const room = await Twilio.Video.connect(token, connectOptions);
+            this.currentRoom = room;
+            
+            // 接続状態の監視を設定
+            this.setupConnectionMonitoring(room);
+            
+            return room;
+        } catch (error) {
+            log('Connection error: ' + error.message);
+            throw error;
+        } finally {
+            this.isConnecting = false;
+        }
+    }
+
+    setupConnectionMonitoring(room) {
+        room.on('disconnected', (room, error) => {
+            log('Disconnected from room:', error ? error.message : 'No error');
+            this.handleDisconnection(error);
+        });
+
+        room.on('reconnecting', error => {
+            log('Reconnecting to room:', error ? error.message : 'No error');
+        });
+
+        room.on('reconnected', () => {
+            log('Successfully reconnected to room');
+        });
+
+        // ネットワーク品質の監視
+        room.localParticipant.on('networkQualityLevelChanged', level => {
+            log(`Network quality changed to level: ${level}`);
+        });
+    }
+
+    handleDisconnection(error) {
+        if (this.currentRoom) {
+            this.currentRoom = null;
+            updateUIForDisconnection();
+            
+            if (error && connectionAttempts < MAX_RETRY_ATTEMPTS) {
+                const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 10000);
+                connectionAttempts++;
+                setTimeout(() => this.retryConnection(), delay);
+            }
+        }
+    }
+
+    async retryConnection() {
+        if (this.isConnecting || this.currentRoom) return;
+
+        try {
+            const response = await getNewToken();
+            if (response.token) {
+                await this.connect(response.token, response.roomName);
+                connectionAttempts = 0;
+            }
+        } catch (error) {
+            log('Retry connection failed: ' + error.message);
+        }
+    }
+
+    disconnect() {
+        if (this.currentRoom) {
+            this.currentRoom.disconnect();
+            this.currentRoom = null;
+        }
+        connectionAttempts = 0;
+        updateUIForDisconnection();
+    }
+}
+
+const connectionManager = new ConnectionManager();
 
 
 function log(message) {
@@ -199,10 +307,9 @@ async function leaveRoom2() {
         room.disconnect();
         room = null;
 
-
         await new Promise(resolve => setTimeout(resolve, 5000)); // 5秒待機
 
-        // 録画完了を通知
+        // 録画完了と文字起こしを一度のリクエストで処理
         const response = await fetch('/video_chat/recording-complete/', {
             method: 'POST',
             headers: {
@@ -210,7 +317,8 @@ async function leaveRoom2() {
                 'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({
-                RoomSid: roomSid
+                RoomSid: roomSid,
+                transcribe: true // 文字起こしも要求
             })
         });
 
@@ -221,34 +329,16 @@ async function leaveRoom2() {
         const data = await response.json();
 
         if (data.status === "success") {
-            // 文字起こし処理のリクエスト
-            const transcribeResponse = await fetch('/video_chat/go_transcribe/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    RoomSid: roomSid
-                })
-            });
-
-            if (!transcribeResponse.ok) {
-                throw new Error('Failed to transcribe audio');
-            }
-
-            const transcribeData = await transcribeResponse.json();
-
-            if (transcribeData.status === 'success') {
-                hideLoading();
+            hideLoading();
+            if (data.transcript) {
                 // URLエンコードを使用して文字起こしデータを安全に渡す
-                const encodedTranscript = encodeURIComponent(transcribeData.transcript);
+                const encodedTranscript = encodeURIComponent(data.transcript);
                 window.location.href = `/video_chat/player/?room_sid=${roomSid}&transcript=${encodedTranscript}`;
             } else {
-                throw new Error('Transcription failed');
+                throw new Error('No transcript received');
             }
         } else {
-            throw new Error('Recording completion failed');
+            throw new Error(data.error || 'Recording completion failed');
         }
 
     } catch (error) {
@@ -278,66 +368,22 @@ function hideLoading() {
 
 
 
-
-// DOMContentLoaded イベントリスナー
-document.addEventListener('DOMContentLoaded', function() {
-    log('Initializing video chat controls...');
-    
-    joinButton = document.getElementById('join-button');
-    leaveButton = document.getElementById('leave-button');
-    
-    // ユーザータイプの選択をモニター
-    const userTypeSelect = document.getElementById('user-type');
-    if (userTypeSelect) {
-        userTypeSelect.addEventListener('change', function(e) {
-            currentUserType = e.target.value;
-            log(`User type changed to: ${currentUserType}`);
-        });
-    }
-    
-    if (joinButton) {
-        log('Join button found');
-        joinButton.addEventListener('click', joinRoom);
-    } else {
-        log('Warning: Join button not found');
-    }
-    
-    if (leaveButton) {
-        log('Leave button found');
-        leaveButton.addEventListener('click', leaveRoom);
-    } else {
-        log('Warning: Leave button not found');
-    }
-});
-
-
-
-
-// joinRoom関数を修正
 async function joinRoom() {
+    if (connectionManager.isConnecting) {
+        alert('Connection already in progress');
+        return;
+    }
+
     const roomName = document.getElementById('room-name').value;
-    const userType = document.getElementById('user-type').value; // HTMLに追加必要
+    const userType = document.getElementById('user-type').value;
 
-    
-    
-    if (!roomName) {
-        alert('Please enter a room name');
+    if (!roomName || !userType) {
+        alert('Please enter room name and select user type');
         return;
     }
 
-    if (!userType) {
-        alert('Please select user type');
-        return;
-    }
-
-
-    // ユーザータイプを保存
     currentUserType = userType;
-    log(`Current user type set to: ${currentUserType}`);
-
-
     joinButton.disabled = true;
-    log(`Attempting to join room: ${roomName} as ${userType}`);
 
     try {
         const response = await fetch('/video_chat/make_token/', {
@@ -352,25 +398,19 @@ async function joinRoom() {
             })
         });
 
-        log(`Response status: ${response.status}`);
         const data = await response.json();
-
+        
         if (data.error) {
             throw new Error(data.error);
         }
 
-        log('Connecting to Twilio room...');
-        room = await Twilio.Video.connect(data.token, {
-            name: roomName,
-            audio: true,
-            video: { width: 640, height: 480 }
-        });
-
-        log('Successfully connected to room');
-        handleRoomConnection(room);
-
-        joinButton.style.display = 'none';
-        leaveButton.style.display = 'inline-block';
+        room = await connectionManager.connect(data.token, roomName);
+        
+        if (room) {
+            handleRoomConnection(room);
+            joinButton.style.display = 'none';
+            leaveButton.style.display = 'inline-block';
+        }
 
     } catch (error) {
         log(`Error: ${error.message}`);
@@ -378,6 +418,45 @@ async function joinRoom() {
         joinButton.disabled = false;
     }
 }
+
+function updateUIForDisconnection() {
+    joinButton.style.display = 'inline-block';
+    joinButton.disabled = false;
+    leaveButton.style.display = 'none';
+}
+
+// イベントリスナーの設定
+document.addEventListener('DOMContentLoaded', function() {
+    log('Initializing video chat controls...');
+    
+    joinButton = document.getElementById('join-button');
+    leaveButton = document.getElementById('leave-button');
+    
+    const userTypeSelect = document.getElementById('user-type');
+    if (userTypeSelect) {
+        userTypeSelect.addEventListener('change', function(e) {
+            currentUserType = e.target.value;
+            log(`User type changed to: ${currentUserType}`);
+        });
+    }
+    
+    if (joinButton) {
+        log('Join button found');
+        joinButton.addEventListener('click', joinRoom);
+    }
+    
+    if (leaveButton) {
+        log('Leave button found');
+        leaveButton.addEventListener('click', () => {
+            connectionManager.disconnect();
+            if (currentUserType === 'student') {
+                handleStudentLeave();
+            } else {
+                handleTeacherLeave();
+            }
+        });
+    }
+});
 
 
 
