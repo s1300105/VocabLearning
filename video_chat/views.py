@@ -661,32 +661,6 @@ def transcribe_audio(request):
 
 
 
-def analyze_english_speech(transcript):
-    """英語の発話を分析"""
-    analysis = {
-        'text': transcript,
-        'word_count': len(transcript.split()),
-        'sentiment': None,
-        'language_score': None,
-        'grammar_errors': []
-    }
-    
-    try:
-        blob = TextBlob(transcript)
-        
-        # 感情分析
-        analysis['sentiment'] = blob.sentiment.polarity
-        
-        # 文法チェック
-        grammar_errors = []
-        # ここに文法チェックのロジックを追加
-        
-        analysis['grammar_errors'] = grammar_errors
-        
-        return analysis
-    except Exception as e:
-        logger.error(f"Analysis error: {str(e)}")
-        return analysis
 
 
 

@@ -27,6 +27,7 @@ urlpatterns = [
     path('word_learning/', include('word_learning.urls')),
     #path('english_conversation/', include("english_conversation.urls")),
     path('video_chat/', include('video_chat.urls')),
+    path('conversation_analysis/', include('conversation_analysis.urls')),
     path('favicon.ico', RedirectView.as_view(
         url=staticfiles_storage.url('favicon.ico'),
         permanent=False

@@ -174,7 +174,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'word_learning',
     'video_chat',
-    'english_conversation',
+    'conversation_analysis',
     
     
 ]
