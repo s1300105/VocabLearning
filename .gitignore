@@ -1,0 +1,4 @@
+.env
+*.gguf
+*.logdb.sqlite3
+db.sqlite3
