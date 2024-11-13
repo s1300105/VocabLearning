@@ -1,0 +1,91 @@
+INFO 2024-11-13 21:24:55,853 autoreload 26070 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-13 21:25:17,101 runserver 26070 10754224128 [mHTTP GET /video_chat/video_lesson/ 200 [0.03, 127.0.0.1:54717][0m
+INFO 2024-11-13 21:25:17,269 runserver 26070 10754224128 [mHTTP GET /static/video_chat/css/video.css 200 [0.02, 127.0.0.1:54717][0m
+INFO 2024-11-13 21:25:17,269 runserver 26070 10754224128 [mHTTP GET /static/video_chat/js/video.js 200 [0.02, 127.0.0.1:54718][0m
+INFO 2024-11-13 21:25:18,130 runserver 26070 10754224128 [32mHTTP GET /favicon.ico 302 [0.07, 127.0.0.1:54718][0m
+WARNING 2024-11-13 21:25:18,172 runserver 26070 10754224128 [33mHTTP GET /static/favicon.ico 404 [0.03, 127.0.0.1:54718][0m
+INFO 2024-11-13 21:25:30,402 runserver 26070 10754224128 [mHTTP GET /admin/ 200 [0.13, 127.0.0.1:54782][0m
+WARNING 2024-11-13 21:25:47,498 log 26070 10821529600 Not Found: /login
+WARNING 2024-11-13 21:25:47,509 runserver 26070 10754224128 [33mHTTP GET /login 404 [0.03, 127.0.0.1:54861][0m
+WARNING 2024-11-13 21:25:52,548 log 26070 10821529600 Not Found: /login/
+WARNING 2024-11-13 21:25:52,549 runserver 26070 10754224128 [33mHTTP GET /login/ 404 [0.02, 127.0.0.1:54886][0m
+INFO 2024-11-13 21:26:03,090 runserver 26070 10754224128 [mHTTP GET /word_learning/login 200 [0.02, 127.0.0.1:54934][0m
+INFO 2024-11-13 21:26:09,566 runserver 26070 10754224128 [32mHTTP POST /word_learning/login 302 [0.33, 127.0.0.1:54963][0m
+INFO 2024-11-13 21:26:09,579 runserver 26070 10754224128 [32mHTTP GET /video_chat/video_lesson 301 [0.01, 127.0.0.1:54963][0m
+INFO 2024-11-13 21:26:09,586 runserver 26070 10754224128 [mHTTP GET /video_chat/video_lesson/ 200 [0.00, 127.0.0.1:54963][0m
+INFO 2024-11-13 21:26:16,838 views 26070 10771050496 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-13 21:26:18,377 views 26070 10771050496 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-13 21:26:19,882 views 26070 10771050496 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-13 21:26:20,912 views 26070 10787876864 Created new room: Room1 (SID: RMc586fbfaffae3e9fd6336130c9336c32)
+INFO 2024-11-13 21:26:21,085 views 26070 10771050496 Found room created by another process: Room1
+INFO 2024-11-13 21:26:21,579 views 26070 10771050496 Generating token for identity: student
+INFO 2024-11-13 21:26:21,584 runserver 26070 10754224128 [mHTTP POST /video_chat/make_token/ 200 [5.36, 127.0.0.1:55005][0m
+INFO 2024-11-13 21:26:22,665 views 26070 10787876864 Successfully set recording rules for room: RMc586fbfaffae3e9fd6336130c9336c32
+INFO 2024-11-13 21:26:22,669 views 26070 10787876864 Generating token for identity: student
+INFO 2024-11-13 21:26:22,675 runserver 26070 10754224128 [mHTTP POST /video_chat/make_token/ 200 [6.45, 127.0.0.1:55006][0m
+INFO 2024-11-13 21:27:03,908 views 26070 10771050496 Recording complete handler started
+INFO 2024-11-13 21:27:03,909 views 26070 10771050496 Received data: {'RoomSid': 'RMc586fbfaffae3e9fd6336130c9336c32', 'transcribe': True}
+INFO 2024-11-13 21:27:03,909 views 26070 10771050496 Processing room_sid: RMc586fbfaffae3e9fd6336130c9336c32
+INFO 2024-11-13 21:27:03,909 views 26070 10771050496 Fetching recording data...
+INFO 2024-11-13 21:27:03,909 views 26070 10771050496 Starting get_room_recordings for room_sid: RMc586fbfaffae3e9fd6336130c9336c32
+INFO 2024-11-13 21:27:04,190 views 26070 10771050496 Current session started at: 2024-11-13 12:26:20+00:00
+INFO 2024-11-13 21:27:14,458 views 26070 10771050496 Found 1 recordings on attempt 1
+INFO 2024-11-13 21:27:14,458 views 26070 10771050496 Found audio recording: RT61f8486dcaf0b408470232ccc6a836e0, status: completed
+DEBUG 2024-11-13 21:27:14,458 views 26070 10771050496 Processing latest recording RT61f8486dcaf0b408470232ccc6a836e0
+DEBUG 2024-11-13 21:27:14,458 views 26070 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT61f8486dcaf0b408470232ccc6a836e0/Media
+DEBUG 2024-11-13 21:27:25,854 views 26070 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-13 21:27:25,862 views 26070 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-13 21:27:25,863 views 26070 10771050496 Found 1 media files
+INFO 2024-11-13 21:27:32,451 runserver 26070 10754224128 [mHTTP POST /video_chat/recording-complete/ 200 [28.56, 127.0.0.1:55207][0m
+INFO 2024-11-13 21:27:32,664 views 26070 10771050496 Starting get_room_recordings for room_sid: RMc586fbfaffae3e9fd6336130c9336c32
+INFO 2024-11-13 21:27:32,894 views 26070 10771050496 Current session started at: 2024-11-13 12:26:20+00:00
+INFO 2024-11-13 21:27:43,447 views 26070 10771050496 Found 1 recordings on attempt 1
+INFO 2024-11-13 21:27:43,447 views 26070 10771050496 Found audio recording: RT61f8486dcaf0b408470232ccc6a836e0, status: completed
+DEBUG 2024-11-13 21:27:43,447 views 26070 10771050496 Processing latest recording RT61f8486dcaf0b408470232ccc6a836e0
+DEBUG 2024-11-13 21:27:43,448 views 26070 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT61f8486dcaf0b408470232ccc6a836e0/Media
+DEBUG 2024-11-13 21:27:55,109 views 26070 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-13 21:27:55,118 views 26070 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-13 21:27:55,118 views 26070 10771050496 Preparing recording data with ID: 25
+INFO 2024-11-13 21:27:55,130 runserver 26070 10754224128 [mHTTP GET /video_chat/player/?room_sid=RMc586fbfaffae3e9fd6336130c9336c32&transcript=Hello%2C%20can%20you%20hear%20and%20see%20me%20clearly%3F%20Yes%2C%20I%20can%20hear%20and%20see%20you%20clearly.%20I%27m%20presenting%20in%20front%20of%20teachers%20and%20students%20as%20a%20laboratory%20seminar.%20And%20I%27m%20almost%20done%20with%20presenting%2C%20but%20I%27m%20in%20the%20progress%20of%20demo.%0A 200 [22.51, 127.0.0.1:55207][0m
+INFO 2024-11-13 21:29:08,406 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/25/analysis/ 200 [3.66, 127.0.0.1:55731][0m
+INFO 2024-11-13 21:29:08,935 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/25/analysis/ 200 [0.49, 127.0.0.1:55731][0m
+INFO 2024-11-13 21:29:09,026 runserver 26070 10754224128 [36mHTTP GET /static/conversation_analysis/js/analysis.js 304 [0.01, 127.0.0.1:55731][0m
+INFO 2024-11-13 21:29:38,116 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/25/analysis/ 200 [0.49, 127.0.0.1:55877][0m
+INFO 2024-11-13 21:32:31,807 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/25/analysis/ 200 [0.54, 127.0.0.1:56615][0m
+INFO 2024-11-13 21:36:50,226 runserver 26070 10754224128 [mHTTP GET /video_chat/video_lesson/ 200 [0.07, 127.0.0.1:57807][0m
+INFO 2024-11-13 21:36:55,218 views 26070 10771050496 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-13 21:36:56,817 views 26070 10771050496 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-13 21:36:58,017 views 26070 10771050496 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-13 21:36:59,224 views 26070 10787876864 Created new room: Room1 (SID: RM0070a76ea677dae87e6deef89c934cae)
+INFO 2024-11-13 21:36:59,237 views 26070 10771050496 Found room created by another process: Room1
+INFO 2024-11-13 21:36:59,461 views 26070 10771050496 Generating token for identity: student
+INFO 2024-11-13 21:36:59,471 runserver 26070 10754224128 [mHTTP POST /video_chat/make_token/ 200 [4.97, 127.0.0.1:57836][0m
+INFO 2024-11-13 21:37:01,011 views 26070 10787876864 Successfully set recording rules for room: RM0070a76ea677dae87e6deef89c934cae
+INFO 2024-11-13 21:37:01,012 views 26070 10787876864 Generating token for identity: student
+INFO 2024-11-13 21:37:01,015 runserver 26070 10754224128 [mHTTP POST /video_chat/make_token/ 200 [6.51, 127.0.0.1:57837][0m
+INFO 2024-11-13 21:39:31,932 views 26070 10771050496 Recording complete handler started
+INFO 2024-11-13 21:39:31,936 views 26070 10771050496 Received data: {'RoomSid': 'RM0070a76ea677dae87e6deef89c934cae', 'transcribe': True}
+INFO 2024-11-13 21:39:31,936 views 26070 10771050496 Processing room_sid: RM0070a76ea677dae87e6deef89c934cae
+INFO 2024-11-13 21:39:31,936 views 26070 10771050496 Fetching recording data...
+INFO 2024-11-13 21:39:31,937 views 26070 10771050496 Starting get_room_recordings for room_sid: RM0070a76ea677dae87e6deef89c934cae
+INFO 2024-11-13 21:39:32,486 views 26070 10771050496 Current session started at: 2024-11-13 12:36:59+00:00
+INFO 2024-11-13 21:39:43,041 views 26070 10771050496 Found 1 recordings on attempt 1
+INFO 2024-11-13 21:39:43,041 views 26070 10771050496 Found audio recording: RTea5b85791ee5ebfa265e8b8a4fd38713, status: completed
+DEBUG 2024-11-13 21:39:43,042 views 26070 10771050496 Processing latest recording RTea5b85791ee5ebfa265e8b8a4fd38713
+DEBUG 2024-11-13 21:39:43,042 views 26070 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTea5b85791ee5ebfa265e8b8a4fd38713/Media
+DEBUG 2024-11-13 21:39:54,924 views 26070 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-13 21:39:54,932 views 26070 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-13 21:39:54,932 views 26070 10771050496 Found 1 media files
+INFO 2024-11-13 21:40:06,684 runserver 26070 10754224128 [mHTTP POST /video_chat/recording-complete/ 200 [34.79, 127.0.0.1:58497][0m
+INFO 2024-11-13 21:40:06,800 views 26070 10771050496 Starting get_room_recordings for room_sid: RM0070a76ea677dae87e6deef89c934cae
+INFO 2024-11-13 21:40:07,017 views 26070 10771050496 Current session started at: 2024-11-13 12:36:59+00:00
+INFO 2024-11-13 21:40:17,323 views 26070 10771050496 Found 1 recordings on attempt 1
+INFO 2024-11-13 21:40:17,325 views 26070 10771050496 Found audio recording: RTea5b85791ee5ebfa265e8b8a4fd38713, status: completed
+DEBUG 2024-11-13 21:40:17,325 views 26070 10771050496 Processing latest recording RTea5b85791ee5ebfa265e8b8a4fd38713
+DEBUG 2024-11-13 21:40:17,325 views 26070 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTea5b85791ee5ebfa265e8b8a4fd38713/Media
+DEBUG 2024-11-13 21:40:19,211 views 26070 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-13 21:40:19,218 views 26070 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-13 21:40:19,218 views 26070 10771050496 Preparing recording data with ID: 26
+INFO 2024-11-13 21:40:19,318 runserver 26070 10754224128 [mHTTP GET /video_chat/player/?room_sid=RM0070a76ea677dae87e6deef89c934cae&transcript=Women%20in%20Japan%20still%20do%20more%20of%20the%20housework.%20A%20recent%20survey%20in%20Japan%20made%20it%20clear%20that%20married%20women%20do%20the%20majority%20of%20cooking%20and%20housework%2C%20whether%20they%20are%20employed%20full-time%20or%20not.%20The%20survey%20was%20made%20by%20a%20research%20institute%20associated%20with%20the%20Japanese%20Trade%20Union%20Confederation.%20It%20was%20given%20to%20people%20between%20the%20ages%20of%2020%20and%2064%20living%20in%20the%20Greater%20Tokyo%20or%20Kansai%20areas%2C%20who%20work%20at%20private%20companies.%20Questions%20concerning%20housework%20were%20only%20directed%20at%20married%20people%2C%20and%20996%20responded.%20In%20the%20area%20of%20meal%20preparation%2C%2073.4%25%20of%20women%20answered%20that%20they%20prepared%20meal%206%20to%207%20times%20a%20week.%20Only%2011.6%25%20of%20men%20gave%20the%20same%20answer.%20Cleanup%20after%20meals%20also%20was%20done%20mostly%20by%20women%20at%2075.4%25%2C%20but%20only%2026.5%25%20by%20men.%20Regarding%20the%20chore%20of%20doing%20laundry%2C%2066.1%25%20of%20women%20said%20that%20they%20did%20it%20nearly%20every%20day%2C%20while%20only%2010.9%25%20of%20men%20said%20the%20same.%20Similar%20responses%20are%20made%20about%20other%20housework%20chores.%20These%20replies%20indicate%20that%20women%20in%20Japan%20do%20far%20more%20housework%20than%20men%2C%20regardless%20of%20the%20hours%20they%20work%20a%20job.%20In%20fact%2C%20the%20housework%20burden%20of%20working%20women%20is%20almost%20the%20same%20as%20that%20of%20a%20housewife.%20Men%20in%20Japan%20do%20comparatively%20little%20housework%20even%20if%20their%20wives%20have%20full-time%20employment.%0A 200 [12.53, 127.0.0.1:58497][0m
+INFO 2024-11-13 21:40:28,336 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/26/analysis/ 200 [0.77, 127.0.0.1:58751][0m
+INFO 2024-11-13 21:40:28,837 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/26/analysis/ 200 [0.46, 127.0.0.1:58751][0m

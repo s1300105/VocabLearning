@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transcription Result</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'video_chat/css/transcribe.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Transcription Result</h1>
+        
+        <div class="audio-container">
+            <h2>Original Recording</h2>
+            <audio controls>
+                <source src="{{ audio_url }}" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        
+        <div class="transcript-container">
+            <h2>Transcription</h2>
+            <div class="transcript-text">{{ transcript }}</div>
+        </div>
+        
+        <div class="download-container">
+            <h2>Download</h2>
+            <a href="{{ transcript_url }}" class="download-button" download>
+                Download Transcript
+            </a>
+        </div>
+        
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Processing transcription...</p>
+        </div>
+    </div>
+    
+    <script src="{% static 'video_chat/js/transcribe.js' %}"></script>
+</body>
+</html>

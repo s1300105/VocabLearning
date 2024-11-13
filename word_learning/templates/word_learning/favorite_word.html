@@ -1,0 +1,26 @@
+{% extends "word_learning/base.html" %}
+{% block content %}
+{% for word in words %}
+<div class="post block">
+    <h1 class="englishword">
+        <strong>
+            {{word.eng_word}}
+        </strong>
+    </h1>
+    <ul class="japanesewords">
+            <li>{{ word.meaning }}</li>
+    </ul>
+    <a href="{% url 'word_detail' word.id %}">detail of this word</a>
+    <br>
+    <form method="POST" action="{% url 'delete_word' word.id %}">
+        {% csrf_token %}
+        <button type="submit" name="delete_word">Delete</button>
+    </form>
+</div>
+<hr>
+{% endfor %}
+<br>
+<a href="{% url 'word_quiz' %}">Word quiz</a>
+<br>
+<a href="{% url 'writting_quiz' %}">Writting Quiz</a>
+{% endblock %}

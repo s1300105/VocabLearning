@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Processing Recording</title>
+    <link rel="stylesheet" href="{% static 'video_chat/css/processing.css' %}">
+</head>
+<body>
+    <div id="status-checker" data-composition-sid="{{ composition_sid }}">
+        <div class="processing-container">
+            <div class="processing-content">
+                <div class="spinner"></div>
+                <h2 class="processing-title">Processing Recording</h2>
+                <p class="processing-message">Please wait while we process your recording...</p>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'video_chat/js/composition_status_checker.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% extends 'word_learning/base.html' %}
+
+{% block title %}
+{% if user.is_authenticated %}
+<div class="h1">MyPage</div>
+{% else %}
+<div class="h1">Main</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<div class="h2">Welcome {{user.first_name}} {{user.last_name}}</div>
+<a href="{% url 'favorite_words' %}">Go to Your Word list</a>
+<form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Logout</button>
+</form>
+
+{% else %}
+<a href="{% url 'signup' %}" class="btn btn-primary">Signup</a>
+<a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+
+{% endif %}
+{% endblock %}

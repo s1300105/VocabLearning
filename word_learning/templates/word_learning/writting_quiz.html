@@ -1,0 +1,39 @@
+{% extends "word_learning/base.html" %}
+{% block content %}
+
+<form method="POST" action="{% url 'writting_quiz' %}">
+    {% csrf_token %}
+    <button type="submit" name="writting_quiz">Generate new writting quiz</button>
+</form>
+<hr>
+{% for quiz in quiz_page  %}
+    <strong>Question</strong>
+    <h2>{{quiz.quiz}}</h2>
+    
+    
+    <br>
+    <a href="{% url 'wr_quiz_page' quiz.id %}">Go to Question</a>
+    <br>
+    <a href="{% url 'answer_history' quiz.id %}">Go to answer</a>
+    <br><hr>
+{% endfor %}
+
+<div class="pagination">
+    <span class="step-link">
+        {% if quiz_page.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ quiz_page.previous_page_number}}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ quiz_page.number}} of {{ quiz_page.paginator.num_pages}}.
+        </span>
+
+        {% if quiz_page.has_next %}
+            <a href="?page={{ quiz_page.next_page_number}}">next</a>
+            <a href="?page={{ quiz_page.paginator.num_pages}}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}

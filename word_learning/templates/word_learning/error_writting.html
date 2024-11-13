@@ -1,0 +1,16 @@
+{% extends 'word_learning/base.html' %}
+{% block content %}
+    <h1>Error Occurred</h1>
+    <hr>
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <a href="{% url 'score_wr_quiz' %}">score all your writting answers</a>
+
+{% endblock %}
+
+
