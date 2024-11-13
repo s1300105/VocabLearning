@@ -10,6 +10,8 @@ urlpatterns = [
     path('player/', views.player_view, name='player'),
     path('go_transcribe/', views.go_transcribe, name="go_transcribe"),
     path('transcribe_audio/', views.transcribe_audio, name="transcribe_audio"),  # 追加
+    path('recording/<int:recording_id>/status/', views.recording_status, name='recording_status'),
+    path('recordings/', views.recording_list, name='recording_list'),
 ]
 
 

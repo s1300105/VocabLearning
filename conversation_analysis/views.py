@@ -1,47 +1,80 @@
-from django.shortcuts import render
-from .analysis import WordFrequencyAnalyzer
-from collections import Counter
-# Create your views here.
+# conversation_analysis/views.py
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .services import ConversationAnalysisService
+from .models import ConversationAnalysis, WordFrequency, POSDistribution
+from video_chat.models import Recording
+import logging
 
-# views.py
-def word_freq(request):
-    transcribe_text = """
-    I think this project is really important for our company. 
-    The team has been working hard to achieve our goals.
-    We need to focus on improving the quality of our products.
-    I believe we can make significant progress if we continue working together.
-    The customers are happy with our service, but we should always strive to do better.
-    """
+logger = logging.getLogger(__name__)
 
-    analyzer = WordFrequencyAnalyzer()
-    analysis_results = analyzer.analyze_text(transcribe_text)
-    rankings = analyzer.generate_rankings(analysis_results)
 
-    # 上位5単語とその頻度（グラフ用にデータを整形）
-    freq_dict = dict(analysis_results['word_counts'].most_common(5))
+@login_required
+def analysis_detail(request, recording_id):
+    """会話分析の詳細を表示"""
+    recording = get_object_or_404(Recording, id=recording_id, user=request.user)
     
-    # 品詞別カウントデータ（品詞ごとの単語出現回数）
-    count_word = [
-        (pos, dict(counts.most_common()))  # 全ての単語を含める
-        for pos, counts in analysis_results['pos_counts'].items()
-    ]
-    
-    # 全体ランキング（上位5件）
-    top5_ranking = rankings['overall'][:5]
-    
-    # 品詞別ランキング（各品詞上位3件）
-    ranking_by_pos = [
-        (pos, rank[:3])
-        for pos, rank in rankings['by_pos'].items()
-        if rank  # 空のランキングを除外
-    ]
+    try:
+        # 分析サービスのインスタンスを作成
+        analysis_service = ConversationAnalysisService()
+        
+        try:
+            # 既存の分析を取得
+            analysis = ConversationAnalysis.objects.get(recording=recording)
+            if not analysis.is_completed:
+                # 完了していない分析は再実行
+                analysis = analysis_service.analyze_recording(recording)
+        except ConversationAnalysis.DoesNotExist:
+            # 分析が存在しない場合は新規作成
+            logger.info(f"Creating new analysis for recording {recording_id}")
+            analysis = analysis_service.analyze_recording(recording)
 
-    context = {
-        'freq_dict': freq_dict,
-        'count_word': count_word,
-        'top5_ranking': top5_ranking,
-        'ranking_by_pos': ranking_by_pos,
+        # データの準備
+        freq_dict = dict(WordFrequency.objects.filter(
+            analysis=analysis
+        ).order_by('-count')[:5].values_list('word', 'count'))
+        
+        count_word = []
+        for pos in set(WordFrequency.objects.filter(
+            analysis=analysis
+        ).values_list('pos_tag', flat=True)):
+            words = WordFrequency.objects.filter(
+                analysis=analysis,
+                pos_tag=pos
+            ).order_by('-count')
+            count_word.append((pos, dict(words.values_list('word', 'count'))))
 
-    }
-    
-    return render(request, "conversation_analysis/analysis.html", context)
+        top5_ranking = WordFrequency.objects.filter(
+            analysis=analysis
+        ).order_by('-count')[:5].values_list('word', 'count')
+
+        ranking_by_pos = []
+        for pos in set(WordFrequency.objects.filter(
+            analysis=analysis
+        ).values_list('pos_tag', flat=True)):
+            pos_words = WordFrequency.objects.filter(
+                analysis=analysis,
+                pos_tag=pos
+            ).order_by('-count')[:3]
+            if pos_words:
+                ranking_by_pos.append((pos, pos_words.values_list('word', 'count')))
+
+        context = {
+            'recording': recording,
+            'analysis': analysis,
+            'freq_dict': freq_dict,
+            'count_word': count_word,
+            'top5_ranking': top5_ranking,
+            'ranking_by_pos': ranking_by_pos
+        }
+        
+        return render(request, 'conversation_analysis/analysis.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error in analysis_detail: {str(e)}")
+        logger.exception("Full traceback:")  # 詳細なエラー情報をログに記録
+        return JsonResponse({
+            'error': 'Failed to analyze recording',
+            'details': str(e)
+        }, status=500)

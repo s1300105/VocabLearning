@@ -136,8 +136,8 @@ class EngWord(models.Model):
                                       choices=PART_OF_SPEECH_CHOICES,
                                       max_choices=9,
                                       blank=True, null=True)
-    synonyms = models.ManyToManyField('self', blank=True, null=True)
-    antonyms = models.ManyToManyField('self', blank=True, null=True)
+    synonyms = models.ManyToManyField('self', blank=True)
+    antonyms = models.ManyToManyField('self', blank=True)
     cefr = models.CharField(max_length=2, blank=True, null=True, choices=CEFR_CHOICES)
 
     def __str__(self):

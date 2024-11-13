@@ -128,6 +128,15 @@ os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
 
 
 
+#Celery設定
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+
 
 
 # デバッグモードを有効に
@@ -223,7 +232,7 @@ DATABASES = {
 AUTH_USER_MODEL = 'word_learning.CustomUser'
 
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "index"
+LOGIN_REDIRECT_URL = "/video_chat/video_lesson"
 LOGOUT_REDIRECT_URL = "login"
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

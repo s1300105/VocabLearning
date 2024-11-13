@@ -287,6 +287,9 @@ async function leaveRoom2() {
 
     try {
         const roomSid = room.sid;
+        const maxRetries = 3;
+        let attempt = 0;
+
         log(`Leaving room to transcribe with SID ${roomSid}`);
 
         // teacherの場合は直接video_lessonページに戻る
@@ -299,7 +302,6 @@ async function leaveRoom2() {
         }
 
         showLoading();
-
         log('Student detected, processing recording and transcription');
 
         // 部屋から退出
@@ -307,38 +309,64 @@ async function leaveRoom2() {
         room.disconnect();
         room = null;
 
-        await new Promise(resolve => setTimeout(resolve, 5000)); // 5秒待機
+        // 録音の完了を待つ
+        log('Waiting for recording to complete...');
+        await new Promise(resolve => setTimeout(resolve, 15000));
 
-        // 録画完了と文字起こしを一度のリクエストで処理
-        const response = await fetch('/video_chat/recording-complete/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                RoomSid: roomSid,
-                transcribe: true // 文字起こしも要求
-            })
-        });
+        while (attempt < maxRetries) {
+            try {
+                log(`Attempting to fetch recording (attempt ${attempt + 1}/${maxRetries})`);
+                const response = await fetch('/video_chat/recording-complete/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        RoomSid: roomSid,
+                        transcribe: true
+                    })
+                });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+                const data = await response.json();
 
-        const data = await response.json();
+                if (response.status === 202) {
+                    // まだ録音が準備できていない場合
+                    log("Recording not ready yet, retrying...");
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    attempt++;
+                    continue;
+                }
 
-        if (data.status === "success") {
-            hideLoading();
-            if (data.transcript) {
-                // URLエンコードを使用して文字起こしデータを安全に渡す
-                const encodedTranscript = encodeURIComponent(data.transcript);
-                window.location.href = `/video_chat/player/?room_sid=${roomSid}&transcript=${encodedTranscript}`;
-            } else {
-                throw new Error('No transcript received');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${data.error || 'Unknown error'}`);
+                }
+
+                if (data.status === "success") {
+                    hideLoading();
+                    log('Recording and transcription successful');
+                    if (data.transcript) {
+                        const encodedTranscript = encodeURIComponent(data.transcript);
+                        window.location.href = `/video_chat/player/?room_sid=${roomSid}&transcript=${encodedTranscript}`;
+                    } else {
+                        throw new Error('No transcript received');
+                    }
+                    return;
+                }
+
+                throw new Error(data.error || 'Recording completion failed');
+
+            } catch (error) {
+                log(`Error on attempt ${attempt + 1}: ${error.message}`);
+                
+                if (attempt === maxRetries - 1) {
+                    hideLoading();
+                    throw new Error(`Failed after ${maxRetries} attempts: ${error.message}`);
+                }
+                
+                attempt++;
+                await new Promise(resolve => setTimeout(resolve, 5000));
             }
-        } else {
-            throw new Error(data.error || 'Recording completion failed');
         }
 
     } catch (error) {

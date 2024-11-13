@@ -33,6 +33,9 @@ from django.core.cache import cache
 from django.core.cache import cache
 from django.db import transaction
 import time
+from .models import Recording
+from .services import RecordingService
+
 
 
 
@@ -461,11 +464,19 @@ def get_room_recordings(room_sid):
         session_start = room.date_created
         logger.info(f"Current session started at: {session_start}")
 
-        # 録音を取得
-        recordings = twilio_client.video.recordings.list(
-            grouping_sid=room_sid,
-            status='completed'
-        )
+        # 録音の取得を複数回試行
+        for attempt in range(3):
+            recordings = twilio_client.video.recordings.list(
+                grouping_sid=room_sid,
+                status='completed'
+            )
+            
+            if recordings:
+                logger.info(f"Found {len(recordings)} recordings on attempt {attempt + 1}")
+                break
+                
+            logger.info(f"No recordings found on attempt {attempt + 1}, waiting...")
+            time.sleep(5)  # 5秒待機してから再試行
         
         # 最新の録音のみを処理
         latest_recording = None
@@ -473,6 +484,7 @@ def get_room_recordings(room_sid):
         
         for recording in recordings:
             if recording.type == 'audio':
+                logger.info(f"Found audio recording: {recording.sid}, status: {recording.status}")
                 if latest_date is None or recording.date_created > latest_date:
                     latest_recording = recording
                     latest_date = recording.date_created
@@ -499,6 +511,9 @@ def get_room_recordings(room_sid):
                     logger.error(f"Failed to get signed URL for recording {latest_recording.sid}")
             except Exception as e:
                 logger.error(f"Error processing recording {latest_recording.sid}: {str(e)}")
+
+        else:
+            logger.warning("No audio recordings found")
         
         return []
         
@@ -514,106 +529,77 @@ def get_room_recordings(room_sid):
 def handle_recording_complete(request):
     """録音完了時のハンドラー"""
     try:
+        logger.info("Recording complete handler started")
         data = json.loads(request.body)
+        logger.info(f"Received data: {data}")
+        
         room_sid = data.get("RoomSid")
-        transcribe_requested = data.get("transcribe", False)
+        logger.info(f"Processing room_sid: {room_sid}")
         
         if not room_sid:
             return JsonResponse({"error": "RoomSid is required"}, status=400)
-        
-        logger.info(f"Handling recording complete for room: {room_sid}")
-        
-        # 古いキャッシュをクリア
-        cache_key = f'room_recordings_{room_sid}'
-        cache.delete(cache_key)
-
-        # 録音データが利用可能になるまでの待機
-        time.sleep(5)
-        
-        # 最新の録音データのみを取得
+            
+        logger.info("Fetching recording data...")
         media_files = get_room_recordings(room_sid)
+        logger.info(f"Found {len(media_files)} media files")
         
         if not media_files:
             return JsonResponse({
                 "status": "warning",
                 "message": "No media files found",
                 "room_sid": room_sid
-            })
+            }, status=202)  # 202 Acceptedを返してリトライを促す
 
-        # 最新の録音データのみをキャッシュ
-        cache.set(cache_key, media_files, timeout=3600)
+        # 録音サービスを初期化
+        recording_service = RecordingService()
         
-        # 文字起こしが要求された場合、最新の録音のみを処理
-        if transcribe_requested and media_files:
-            try:
-                latest_audio = media_files[0]  # 最新の録音のみを処理
-                audio_url = latest_audio['url']
-                
-                # 音声ファイルの処理
-                recordings_dir = os.path.join(settings.MEDIA_ROOT, 'recordings')
-                os.makedirs(recordings_dir, exist_ok=True)
-                
-                # 一時ファイル名にタイムスタンプを追加して重複を防ぐ
-                timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-                original_path = os.path.join(recordings_dir, f"{latest_audio['sid']}_{timestamp}_original.wav")
-                converted_path = os.path.join(recordings_dir, f"{latest_audio['sid']}_{timestamp}.wav")
-                
-                response = requests.get(audio_url, stream=True)
-                if response.status_code == 200:
-                    with open(original_path, 'wb') as f:
-                        for chunk in response.iter_content(chunk_size=8192):
-                            if chunk:
-                                f.write(chunk)
-
-                    audio = AudioSegment.from_file(original_path)
-                    audio.export(converted_path, format='wav', parameters=["-ac", "1"])
-                    
-                    # 文字起こし処理
-                    OPENAI_API_KEY = settings.OPENAI_API_KEY
-                    client = OpenAI(api_key=OPENAI_API_KEY)
-
-                    with open(converted_path, "rb") as audio_file:
-                        transcript_response = client.audio.transcriptions.create(
-                            model="whisper-1",
-                            file=audio_file,
-                            response_format="text"
-                        )
-                        transcript = transcript_response
-
-                    # 一時ファイルを削除
-                    for path in [original_path, converted_path]:
-                        if os.path.exists(path):
-                            os.remove(path)
-                    
-                    return JsonResponse({
-                        "status": "success",
-                        "media_files": media_files,
-                        "room_sid": room_sid,
-                        "transcript": transcript
-                    })
-            except Exception as e:
-                logger.error(f"Error in transcription: {str(e)}")
-                return JsonResponse({
-                    "error": f"Transcription failed: {str(e)}"
-                }, status=500)
-
+        # 最新の録音を処理
+        latest_audio = media_files[0]
+        recording = recording_service.handle_new_recording(
+            room_sid=room_sid,
+            audio_url=latest_audio['url'],
+            duration=latest_audio['duration'],
+            user=request.user if request.user.is_authenticated else None
+        )
+        
         return JsonResponse({
             "status": "success",
-            "message": f"Found {len(media_files)} media files",
-            "media_files": media_files,
-            "room_sid": room_sid
+            "recording_id": recording.id,
+            "room_sid": room_sid,
+            "transcript": recording.transcript if recording.transcript else None
         })
             
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON in request body: {str(e)}")
-        return JsonResponse({
-            "error": "Invalid JSON format in request body"
-        }, status=400)
     except Exception as e:
-        logger.error(f"Error in handle_recording_complete: {str(e)}")
-        return JsonResponse({
-            "error": str(e)
-        }, status=500)
+        logger.error(f"Error in handle_recording_complete: {e}")
+        logger.exception("Full traceback:")
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+
+@require_http_methods(["GET"])
+def recording_status(request, recording_id):
+    """録音の状態を確認するエンドポイント"""
+    try:
+        recording_service = RecordingService()
+        status = recording_service.get_recording_status(recording_id)
+        
+        if status is None:
+            return JsonResponse({"error": "Recording not found"}, status=404)
+            
+        return JsonResponse(status)
+        
+    except Exception as e:
+        logger.error(f"Error checking recording status: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_http_methods(["GET"])
+def recording_list(request):
+    """ユーザーの録音一覧を表示"""
+    recordings = Recording.objects.filter(user=request.user).order_by('-created_at')
+    
+    return render(request, 'video_chat/recording_list.html', {
+        'recordings': recordings
+    })
 
 
 
@@ -659,14 +645,8 @@ def transcribe_audio(request):
 
 
 
-
-
-
-
-
 @require_http_methods(["GET"])
 def player_view(request):
-    """録画プレーヤーページを表示"""
     try:
         room_sid = request.GET.get('room_sid')
         transcript = request.GET.get('transcript')
@@ -675,42 +655,51 @@ def player_view(request):
             return render(request, 'video_chat/player.html', {
                 'error_message': 'Room SID is required'
             })
-        
-            # キャッシュから録音データを取得
+
+        recording = Recording.objects.filter(room_sid=room_sid).first()
+        if not recording:
+            logger.error(f"No recording found for room_sid: {room_sid}")
+            return render(request, 'video_chat/player.html', {
+                'error_message': 'Recording not found'
+            })
+
         media_files = cache.get(f'room_recordings_{room_sid}')
-        
         if not media_files:
-            # キャッシュになければ再取得
             media_files = get_room_recordings(room_sid)
-            
+
         if media_files:
-            media_files.sort(key=lambda x: x['created_at'], reverse=True)
-            logger.info(f"Found {len(media_files)} media files for room {room_sid}")
-            
-            # JSONデータをエスケープせずに渡す
-            recordings_json = json.dumps(media_files)
+            media_file = media_files[0]
+            media_file['recording_id'] = recording.id
+
+            # データを配列として整形
+            data_array = [{
+                'url': media_file['url'],
+                'duration': media_file['duration'],
+                'created_at': media_file['created_at'],
+                'recording_id': recording.id,
+                'type': media_file['type']
+            }]
+
+            logger.info(f"Preparing recording data with ID: {recording.id}")
             
             context = {
-                'recordings_json': recordings_json,
+                'recordings_json': json.dumps(data_array),  # 配列としてJSONエンコード
+                'transcript': transcript,
+                'recording_id': recording.id  # 直接テンプレートでも使用できるように
             }
-            
-            # transcriptが存在する場合のみcontextに追加
-            if transcript:
-                context['transcript'] = transcript
             
             return render(request, 'video_chat/player.html', context)
         else:
             return render(request, 'video_chat/player.html', {
                 'error_message': 'No recordings found for this room'
             })
-                
-
             
     except Exception as e:
         logger.error(f"Error in player_view: {str(e)}")
         return render(request, 'video_chat/player.html', {
             'error_message': 'Failed to load recordings'
         })
+
 
 
 

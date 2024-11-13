@@ -1,3 +1,12 @@
+
+
 from django.contrib import admin
 
-# Register your models here.
+
+
+from .models import ConversationAnalysis, WordFrequency, POSDistribution
+
+
+admin.site.register(ConversationAnalysis)
+admin.site.register(WordFrequency)
+admin.site.register(POSDistribution)
