@@ -13,6 +13,7 @@ class ConversationAnalysis(models.Model):
     word_frequency = models.JSONField(default=dict)  # 単語頻度
     pos_analysis = models.JSONField(default=dict)    # 品詞分析
     grammar_score = models.FloatField(null=True)     # 文法スコア
+    mltd_score = models.FloatField(null=True)
     
     def __str__(self):
         return f"Analysis for recording {self.recording.id}"

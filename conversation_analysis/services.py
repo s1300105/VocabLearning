@@ -7,6 +7,7 @@ import spacy
 import pandas as pd
 from .models import ConversationAnalysis, WordFrequency, POSDistribution
 import logging
+from .vocab_diversity_analysis import VocabularyDiversityAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class ConversationAnalysisService:
               pos: dict(counts.most_common(5))
               for pos, counts in analysis_results['pos_counts'].items()
           }
+          analysis.mltd_score = analysis_results['mtld']
           analysis.is_completed = True
           analysis.save()
 
@@ -77,6 +79,9 @@ class ConversationAnalysisService:
                 pos_counts[token.pos_] = Counter()
             if token.is_alpha:
                 pos_counts[token.pos_][token.text.lower()] += 1
+        
+        diversity_analyzer = VocabularyDiversityAnalyzer()
+        diversity = diversity_analyzer.analyze_text(text)
 
         # 単語情報のDataFrame作成
         word_df = pd.DataFrame([
@@ -92,7 +97,8 @@ class ConversationAnalysisService:
         return {
             'word_counts': word_counts,
             'pos_counts': pos_counts,
-            'word_df': word_df
+            'word_df': word_df,
+            'mtld':diversity["mtld"]
         }
 
     def _save_word_frequencies(self, analysis, word_df):

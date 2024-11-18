@@ -7,7 +7,41 @@
 {% endblock %}
 
 {% block content %}
+<h2>{{ recording }}</h2>
+
+
+
+
 <div class="container my-5">
+
+    
+    <!-- MLTDスコア分析 -->
+    <div class="card mltd-card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Vocabulary Diversity Score (MLTD)</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="metric-card">
+                        <div class="metric-header">MLTD Score</div>
+                        <div class="metric-value">{{ mltd_score|default:"N/A"|floatformat:2 }}</div>
+                        <div class="metric-description">
+                            <p>Measure of Lexical Textual Diversity indicates vocabulary richness.</p>
+                            <ul class="score-interpretation">
+                                <li>&lt; 70: Basic vocabulary usage</li>
+                                <li>70-100: Moderate diversity</li>
+                                <li>&gt; 100: Rich vocabulary usage</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <!-- 上位5単語の頻度分析 -->
     <div class="card frequency-card mb-4">
         <div class="card-header">

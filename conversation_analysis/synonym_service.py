@@ -66,7 +66,7 @@ class SynonymSuggestionService:
         suggestions = defaultdict(list)
         
         # 対象とする品詞
-        target_pos = ['NOUN', 'VERB']
+        target_pos = ['NOUN', 'VERB', 'ADJ', 'ADV']
         
         for pos in target_pos:
             # 指定された品詞の単語を頻度順に取得

@@ -12,6 +12,7 @@
     {% csrf_token %}
     <div class="recording-player-container">
         <h1>Recordings</h1>
+        {{recording_id}}
 
         {% if error_message %}
             <div class="error-message">
@@ -47,14 +48,14 @@
                     {% endif %}
                 </div>
 
-                <!--{% if transcript %}
+                {% if transcript %}
                     <div class="transcript-container">
                         <h3>Transcription</h3>
                         <div class="transcript-text">
                             {{ transcript }}
                         </div>
                     </div>
-                {% endif %} -->
+                {% endif %} 
             </div>
         </div>
     </div>

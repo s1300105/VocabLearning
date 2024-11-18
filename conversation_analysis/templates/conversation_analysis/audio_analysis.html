@@ -1,0 +1,43 @@
+{% extends 'conversation_analysis/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'conversation_analysis/css/audio_analysis.css' %}" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block content %}
+<body></body>
+    <div class="container">
+        <div class="audio-section">
+            <h2>Reference Audio & Room Recording</h2>
+            <div class="audio-controls">
+                <input type="text" id="text-input" placeholder="Enter text to generate audio">
+                <button id="generate-btn">Generate Audio</button>
+                <div class="audio-players">
+                    <div class="player-container">
+                        <h3>Reference Audio</h3>
+                        <audio id="reference-audio-player" controls>
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    <div class="player-container">
+                        <h3>Room Recording</h3>
+                        <audio id="recording-audio-player" controls>
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="message"></div>
+    </div>
+</body>
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{% static 'conversation_analysis/js/audio_analysis.js' %}"></script>
+{% endblock %}

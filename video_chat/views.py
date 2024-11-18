@@ -687,7 +687,7 @@ def player_view(request):
                 'transcript': transcript,
                 'recording_id': recording.id  # 直接テンプレートでも使用できるように
             }
-            
+            logger.info(f"this is roomid {recording.id}")
             return render(request, 'video_chat/player.html', context)
         else:
             return render(request, 'video_chat/player.html', {

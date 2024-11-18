@@ -203,10 +203,11 @@ async function leaveRoom() {
         }
         
         const data = await response.json();
+        transcript = data.transcript;
         
         if (data.status === "success") {
             // room_sidを含めてプレーヤーページにリダイレクト
-            window.location.href = `/video_chat/player/?room_sid=${roomSid}`;
+            window.location.href = `/video_chat/player/?room_sid=${roomSid}&transcript=${transcript}`;
         } else {
             log(`Error: ${data.error || 'Unknown error'}`);
             showError('Failed to process recording');

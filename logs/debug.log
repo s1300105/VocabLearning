@@ -89,3 +89,868 @@ INFO 2024-11-13 21:40:19,218 views 26070 10771050496 Preparing recording data wi
 INFO 2024-11-13 21:40:19,318 runserver 26070 10754224128 [mHTTP GET /video_chat/player/?room_sid=RM0070a76ea677dae87e6deef89c934cae&transcript=Women%20in%20Japan%20still%20do%20more%20of%20the%20housework.%20A%20recent%20survey%20in%20Japan%20made%20it%20clear%20that%20married%20women%20do%20the%20majority%20of%20cooking%20and%20housework%2C%20whether%20they%20are%20employed%20full-time%20or%20not.%20The%20survey%20was%20made%20by%20a%20research%20institute%20associated%20with%20the%20Japanese%20Trade%20Union%20Confederation.%20It%20was%20given%20to%20people%20between%20the%20ages%20of%2020%20and%2064%20living%20in%20the%20Greater%20Tokyo%20or%20Kansai%20areas%2C%20who%20work%20at%20private%20companies.%20Questions%20concerning%20housework%20were%20only%20directed%20at%20married%20people%2C%20and%20996%20responded.%20In%20the%20area%20of%20meal%20preparation%2C%2073.4%25%20of%20women%20answered%20that%20they%20prepared%20meal%206%20to%207%20times%20a%20week.%20Only%2011.6%25%20of%20men%20gave%20the%20same%20answer.%20Cleanup%20after%20meals%20also%20was%20done%20mostly%20by%20women%20at%2075.4%25%2C%20but%20only%2026.5%25%20by%20men.%20Regarding%20the%20chore%20of%20doing%20laundry%2C%2066.1%25%20of%20women%20said%20that%20they%20did%20it%20nearly%20every%20day%2C%20while%20only%2010.9%25%20of%20men%20said%20the%20same.%20Similar%20responses%20are%20made%20about%20other%20housework%20chores.%20These%20replies%20indicate%20that%20women%20in%20Japan%20do%20far%20more%20housework%20than%20men%2C%20regardless%20of%20the%20hours%20they%20work%20a%20job.%20In%20fact%2C%20the%20housework%20burden%20of%20working%20women%20is%20almost%20the%20same%20as%20that%20of%20a%20housewife.%20Men%20in%20Japan%20do%20comparatively%20little%20housework%20even%20if%20their%20wives%20have%20full-time%20employment.%0A 200 [12.53, 127.0.0.1:58497][0m
 INFO 2024-11-13 21:40:28,336 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/26/analysis/ 200 [0.77, 127.0.0.1:58751][0m
 INFO 2024-11-13 21:40:28,837 runserver 26070 10754224128 [mHTTP GET /conversation_analysis/recording/26/analysis/ 200 [0.46, 127.0.0.1:58751][0m
+INFO 2024-11-17 20:07:07,965 autoreload 84879 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 20:07:17,151 runserver 84879 6145257472 [mHTTP GET /video_chat/video_lesson/ 200 [0.07, 127.0.0.1:54684][0m
+INFO 2024-11-17 20:07:25,139 views 84879 6178910208 Waiting for lock on room: Room2 (attempt 1)
+INFO 2024-11-17 20:07:26,799 views 84879 6178910208 Waiting for lock on room: Room2 (attempt 2)
+INFO 2024-11-17 20:07:28,435 views 84879 6178910208 Waiting for lock on room: Room2 (attempt 3)
+INFO 2024-11-17 20:07:29,261 views 84879 6162083840 Created new room: Room2 (SID: RMd2d7d78e30c74c6a21d89a504556bd35)
+INFO 2024-11-17 20:07:29,651 views 84879 6178910208 Found room created by another process: Room2
+INFO 2024-11-17 20:07:29,872 views 84879 6178910208 Generating token for identity: student
+INFO 2024-11-17 20:07:29,879 runserver 84879 6145257472 [mHTTP POST /video_chat/make_token/ 200 [5.32, 127.0.0.1:54719][0m
+INFO 2024-11-17 20:07:31,408 views 84879 6162083840 Successfully set recording rules for room: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:07:31,409 views 84879 6162083840 Generating token for identity: student
+INFO 2024-11-17 20:07:31,420 runserver 84879 6145257472 [mHTTP POST /video_chat/make_token/ 200 [6.86, 127.0.0.1:54718][0m
+INFO 2024-11-17 20:07:54,343 views 84879 6162083840 Recording complete handler started
+INFO 2024-11-17 20:07:54,344 views 84879 6162083840 Received data: {'RoomSid': 'RMd2d7d78e30c74c6a21d89a504556bd35', 'transcribe': True}
+INFO 2024-11-17 20:07:54,344 views 84879 6162083840 Processing room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:07:54,344 views 84879 6162083840 Fetching recording data...
+INFO 2024-11-17 20:07:54,344 views 84879 6162083840 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:07:54,580 views 84879 6162083840 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:08:05,112 views 84879 6162083840 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:08:05,114 views 84879 6162083840 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:08:05,114 views 84879 6162083840 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:08:05,114 views 84879 6162083840 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+DEBUG 2024-11-17 20:08:06,274 views 84879 6162083840 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:08:06,279 views 84879 6162083840 Successfully processed latest recording from current session
+INFO 2024-11-17 20:08:06,279 views 84879 6162083840 Found 1 media files
+INFO 2024-11-17 20:08:09,302 runserver 84879 6145257472 [mHTTP POST /video_chat/recording-complete/ 200 [14.96, 127.0.0.1:54848][0m
+INFO 2024-11-17 20:08:09,407 views 84879 6162083840 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:08:09,608 views 84879 6162083840 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:08:19,816 views 84879 6162083840 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:08:19,818 views 84879 6162083840 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:08:19,818 views 84879 6162083840 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:08:19,818 views 84879 6162083840 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+DEBUG 2024-11-17 20:08:20,671 views 84879 6162083840 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:08:20,679 views 84879 6162083840 Successfully processed latest recording from current session
+INFO 2024-11-17 20:08:20,679 views 84879 6162083840 Preparing recording data with ID: 33
+INFO 2024-11-17 20:08:20,695 runserver 84879 6145257472 [mHTTP GET /video_chat/player/?room_sid=RMd2d7d78e30c74c6a21d89a504556bd35&transcript=Hello%2C%20can%20you%20hear%20and%20see%20me%20clearly%3F%20Yes%2C%20I%20can%20hear%20and%20see%20you%20clearly.%0A 200 [11.30, 127.0.0.1:54848][0m
+INFO 2024-11-17 20:08:39,353 runserver 84879 6145257472 [mHTTP GET /conversation_analysis/recording/33/analysis/ 200 [0.81, 127.0.0.1:55042][0m
+INFO 2024-11-17 20:08:39,944 runserver 84879 6145257472 [mHTTP GET /conversation_analysis/recording/33/analysis/ 200 [0.54, 127.0.0.1:55042][0m
+INFO 2024-11-17 20:09:39,281 views 84879 6162083840 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:09:39,611 views 84879 6162083840 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:09:50,163 views 84879 6162083840 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:09:50,164 views 84879 6162083840 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:09:50,164 views 84879 6162083840 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:09:50,164 views 84879 6162083840 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+INFO 2024-11-17 20:09:57,105 views 84879 6398799872 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:09:57,308 views 84879 6398799872 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:10:00,286 views 84879 6415626240 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:10:00,488 views 84879 6415626240 Current session started at: 2024-11-17 11:07:29+00:00
+DEBUG 2024-11-17 20:10:01,182 views 84879 6162083840 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:10:01,188 views 84879 6162083840 Successfully processed latest recording from current session
+INFO 2024-11-17 20:10:01,189 views 84879 6162083840 Preparing recording data with ID: 33
+INFO 2024-11-17 20:10:07,528 views 84879 6398799872 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:10:07,528 views 84879 6398799872 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:10:07,529 views 84879 6398799872 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:10:07,529 views 84879 6398799872 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+INFO 2024-11-17 20:10:11,053 views 84879 6415626240 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:10:11,053 views 84879 6415626240 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:10:11,053 views 84879 6415626240 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:10:11,054 views 84879 6415626240 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+DEBUG 2024-11-17 20:10:18,457 views 84879 6398799872 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:10:18,464 views 84879 6398799872 Successfully processed latest recording from current session
+INFO 2024-11-17 20:10:18,465 views 84879 6398799872 Preparing recording data with ID: 33
+DEBUG 2024-11-17 20:10:21,934 views 84879 6415626240 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:10:21,941 views 84879 6415626240 Successfully processed latest recording from current session
+INFO 2024-11-17 20:10:21,941 views 84879 6415626240 Preparing recording data with ID: 33
+INFO 2024-11-17 20:12:14,650 views 84879 6162083840 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:12:15,090 views 84879 6162083840 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:12:25,578 views 84879 6162083840 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:12:25,578 views 84879 6162083840 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:12:25,578 views 84879 6162083840 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:12:25,578 views 84879 6162083840 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+DEBUG 2024-11-17 20:12:36,601 views 84879 6162083840 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:12:36,606 views 84879 6162083840 Successfully processed latest recording from current session
+INFO 2024-11-17 20:12:36,606 views 84879 6162083840 Preparing recording data with ID: 33
+INFO 2024-11-17 20:17:13,832 views 84879 6162083840 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:17:14,363 views 84879 6162083840 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:17:17,516 runserver 84879 6145257472 [mHTTP GET /conversation_analysis/recording/33/analysis/ 200 [0.58, 127.0.0.1:56892][0m
+INFO 2024-11-17 20:17:19,740 views 84879 6398799872 Starting get_room_recordings for room_sid: RMd2d7d78e30c74c6a21d89a504556bd35
+INFO 2024-11-17 20:17:19,983 views 84879 6398799872 Current session started at: 2024-11-17 11:07:29+00:00
+INFO 2024-11-17 20:17:24,928 views 84879 6162083840 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:17:24,928 views 84879 6162083840 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:17:24,929 views 84879 6162083840 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:17:24,929 views 84879 6162083840 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+INFO 2024-11-17 20:17:30,581 views 84879 6398799872 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:17:30,583 views 84879 6398799872 Found audio recording: RT2d74465088e194d7b75eebb71f7bfaaa, status: completed
+DEBUG 2024-11-17 20:17:30,584 views 84879 6398799872 Processing latest recording RT2d74465088e194d7b75eebb71f7bfaaa
+DEBUG 2024-11-17 20:17:30,584 views 84879 6398799872 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2d74465088e194d7b75eebb71f7bfaaa/Media
+DEBUG 2024-11-17 20:17:35,964 views 84879 6162083840 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:17:35,972 views 84879 6162083840 Successfully processed latest recording from current session
+INFO 2024-11-17 20:17:35,972 views 84879 6162083840 Preparing recording data with ID: 33
+DEBUG 2024-11-17 20:17:41,591 views 84879 6398799872 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:17:41,596 views 84879 6398799872 Successfully processed latest recording from current session
+INFO 2024-11-17 20:17:41,596 views 84879 6398799872 Preparing recording data with ID: 33
+INFO 2024-11-17 20:17:41,603 runserver 84879 6145257472 [mHTTP GET /video_chat/player/?room_sid=RMd2d7d78e30c74c6a21d89a504556bd35&transcript=Hello%2C%20can%20you%20hear%20and%20see%20me%20clearly%3F%20Yes%2C%20I%20can%20hear%20and%20see%20you%20clearly.%0A 200 [21.87, 127.0.0.1:56900][0m
+INFO 2024-11-17 20:32:07,284 autoreload 84879 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/services.py changed, reloading.
+INFO 2024-11-17 20:32:12,770 autoreload 85470 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 20:34:50,902 autoreload 85470 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/models.py changed, reloading.
+INFO 2024-11-17 20:34:55,270 autoreload 85540 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 20:36:11,785 autoreload 85540 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/services.py changed, reloading.
+INFO 2024-11-17 20:36:15,558 autoreload 85599 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 20:38:21,800 autoreload 85859 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 20:38:31,364 runserver 85859 10754224128 [mHTTP GET /conversation_analysis/recording/33/analysis/ 200 [1.15, 127.0.0.1:57617][0m
+INFO 2024-11-17 20:38:52,109 runserver 85859 10754224128 [32mHTTP GET /admin 301 [0.03, 127.0.0.1:57626][0m
+INFO 2024-11-17 20:38:52,145 runserver 85859 10754224128 [32mHTTP GET /admin/ 302 [0.03, 127.0.0.1:57626][0m
+INFO 2024-11-17 20:38:52,175 runserver 85859 10754224128 [mHTTP GET /admin/login/?next=/admin/ 200 [0.03, 127.0.0.1:57626][0m
+INFO 2024-11-17 20:39:02,888 runserver 85859 10754224128 [32mHTTP POST /admin/login/?next=/admin/ 302 [0.34, 127.0.0.1:57630][0m
+INFO 2024-11-17 20:39:02,914 runserver 85859 10754224128 [mHTTP GET /admin/ 200 [0.02, 127.0.0.1:57630][0m
+INFO 2024-11-17 20:39:02,965 runserver 85859 10754224128 [mHTTP GET /static/admin/css/dashboard.css 200 [0.01, 127.0.0.1:57630][0m
+INFO 2024-11-17 20:39:02,984 runserver 85859 10754224128 [mHTTP GET /static/admin/img/icon-changelink.svg 200 [0.00, 127.0.0.1:57631][0m
+INFO 2024-11-17 20:39:02,984 runserver 85859 10754224128 [mHTTP GET /static/admin/img/icon-addlink.svg 200 [0.01, 127.0.0.1:57630][0m
+INFO 2024-11-17 20:39:07,201 runserver 85859 10754224128 [mHTTP GET /admin/conversation_analysis/conversationanalysis/ 200 [0.06, 127.0.0.1:57638][0m
+INFO 2024-11-17 20:39:07,243 runserver 85859 10754224128 [mHTTP GET /static/admin/css/changelists.css 200 [0.01, 127.0.0.1:57638][0m
+INFO 2024-11-17 20:39:07,253 runserver 85859 10754224128 [mHTTP GET /static/admin/js/jquery.init.js 200 [0.01, 127.0.0.1:57641][0m
+INFO 2024-11-17 20:39:07,255 runserver 85859 10754224128 [mHTTP GET /static/admin/js/core.js 200 [0.01, 127.0.0.1:57642][0m
+INFO 2024-11-17 20:39:07,255 runserver 85859 10754224128 [mHTTP GET /static/admin/js/actions.js 200 [0.01, 127.0.0.1:57638][0m
+INFO 2024-11-17 20:39:07,256 runserver 85859 10754224128 [mHTTP GET /static/admin/js/admin/RelatedObjectLookups.js 200 [0.01, 127.0.0.1:57643][0m
+INFO 2024-11-17 20:39:07,258 runserver 85859 10754224128 [mHTTP GET /static/admin/js/vendor/jquery/jquery.js 200 [0.01, 127.0.0.1:57640][0m
+INFO 2024-11-17 20:39:07,265 runserver 85859 10754224128 [mHTTP GET /static/admin/js/urlify.js 200 [0.01, 127.0.0.1:57641][0m
+INFO 2024-11-17 20:39:07,266 runserver 85859 10754224128 [mHTTP GET /static/admin/js/prepopulate.js 200 [0.01, 127.0.0.1:57642][0m
+INFO 2024-11-17 20:39:07,267 runserver 85859 10754224128 [mHTTP GET /admin/jsi18n/ 200 [0.02, 127.0.0.1:57639][0m
+INFO 2024-11-17 20:39:07,267 runserver 85859 10754224128 [mHTTP GET /static/admin/js/vendor/xregexp/xregexp.js 200 [0.01, 127.0.0.1:57638][0m
+INFO 2024-11-17 20:39:07,271 runserver 85859 10754224128 [mHTTP GET /static/admin/js/filters.js 200 [0.00, 127.0.0.1:57639][0m
+INFO 2024-11-17 20:39:07,287 runserver 85859 10754224128 [mHTTP GET /static/admin/img/tooltag-add.svg 200 [0.00, 127.0.0.1:57639][0m
+INFO 2024-11-17 20:39:10,790 runserver 85859 10754224128 [mHTTP GET /admin/conversation_analysis/conversationanalysis/13/change/ 200 [0.04, 127.0.0.1:57639][0m
+INFO 2024-11-17 20:39:10,816 runserver 85859 10754224128 [mHTTP GET /static/admin/css/forms.css 200 [0.00, 127.0.0.1:57639][0m
+INFO 2024-11-17 20:39:10,817 runserver 85859 10754224128 [mHTTP GET /static/admin/js/prepopulate_init.js 200 [0.00, 127.0.0.1:57642][0m
+INFO 2024-11-17 20:39:10,823 runserver 85859 10754224128 [mHTTP GET /static/admin/css/widgets.css 200 [0.00, 127.0.0.1:57642][0m
+INFO 2024-11-17 20:39:10,825 runserver 85859 10754224128 [mHTTP GET /admin/jsi18n/ 200 [0.01, 127.0.0.1:57638][0m
+INFO 2024-11-17 20:39:10,830 runserver 85859 10754224128 [mHTTP GET /static/admin/img/icon-viewlink.svg 200 [0.00, 127.0.0.1:57638][0m
+INFO 2024-11-17 20:39:10,831 runserver 85859 10754224128 [mHTTP GET /static/admin/js/change_form.js 200 [0.00, 127.0.0.1:57642][0m
+INFO 2024-11-17 20:39:23,617 runserver 85859 10754224128 [mHTTP GET /video_chat/video_lesson/ 200 [0.01, 127.0.0.1:57648][0m
+INFO 2024-11-17 20:39:28,796 views 85859 10804703232 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-17 20:39:30,302 views 85859 10804703232 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-17 20:39:31,857 views 85859 10804703232 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-17 20:39:32,645 views 85859 10771050496 Created new room: Room1 (SID: RM2d8ffb140206d4daf57488dcb0d747f1)
+INFO 2024-11-17 20:39:33,510 views 85859 10804703232 Found room created by another process: Room1
+INFO 2024-11-17 20:39:33,723 views 85859 10804703232 Generating token for identity: student
+INFO 2024-11-17 20:39:33,729 runserver 85859 10754224128 [mHTTP POST /video_chat/make_token/ 200 [5.59, 127.0.0.1:57655][0m
+INFO 2024-11-17 20:39:34,419 views 85859 10771050496 Successfully set recording rules for room: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:39:34,421 views 85859 10771050496 Generating token for identity: student
+INFO 2024-11-17 20:39:34,426 runserver 85859 10754224128 [mHTTP POST /video_chat/make_token/ 200 [6.29, 127.0.0.1:57654][0m
+INFO 2024-11-17 20:39:57,012 views 85859 10771050496 Recording complete handler started
+INFO 2024-11-17 20:39:57,015 views 85859 10771050496 Received data: {'RoomSid': 'RM2d8ffb140206d4daf57488dcb0d747f1', 'transcribe': True}
+INFO 2024-11-17 20:39:57,015 views 85859 10771050496 Processing room_sid: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:39:57,015 views 85859 10771050496 Fetching recording data...
+INFO 2024-11-17 20:39:57,015 views 85859 10771050496 Starting get_room_recordings for room_sid: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:39:57,238 views 85859 10771050496 Current session started at: 2024-11-17 11:39:32+00:00
+INFO 2024-11-17 20:39:57,868 views 85859 10771050496 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:39:57,869 views 85859 10771050496 Found audio recording: RT77862f3e8bce15590d60bedcf3c0765f, status: completed
+DEBUG 2024-11-17 20:39:57,869 views 85859 10771050496 Processing latest recording RT77862f3e8bce15590d60bedcf3c0765f
+DEBUG 2024-11-17 20:39:57,869 views 85859 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT77862f3e8bce15590d60bedcf3c0765f/Media
+DEBUG 2024-11-17 20:40:08,885 views 85859 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:40:08,890 views 85859 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-17 20:40:08,890 views 85859 10771050496 Found 1 media files
+INFO 2024-11-17 20:40:11,816 runserver 85859 10754224128 [mHTTP POST /video_chat/recording-complete/ 200 [14.83, 127.0.0.1:57665][0m
+INFO 2024-11-17 20:40:11,920 views 85859 10771050496 Starting get_room_recordings for room_sid: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:40:12,454 views 85859 10771050496 Current session started at: 2024-11-17 11:39:32+00:00
+INFO 2024-11-17 20:40:22,764 views 85859 10771050496 Found 1 recordings on attempt 1
+INFO 2024-11-17 20:40:22,765 views 85859 10771050496 Found audio recording: RT77862f3e8bce15590d60bedcf3c0765f, status: completed
+DEBUG 2024-11-17 20:40:22,765 views 85859 10771050496 Processing latest recording RT77862f3e8bce15590d60bedcf3c0765f
+DEBUG 2024-11-17 20:40:22,765 views 85859 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT77862f3e8bce15590d60bedcf3c0765f/Media
+DEBUG 2024-11-17 20:40:33,737 views 85859 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:40:33,744 views 85859 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-17 20:40:33,745 views 85859 10771050496 Preparing recording data with ID: 34
+INFO 2024-11-17 20:40:33,756 runserver 85859 10754224128 [mHTTP GET /video_chat/player/?room_sid=RM2d8ffb140206d4daf57488dcb0d747f1&transcript=I%27m%20Yoon.%20Nice%20to%20meet%20you.%20I%27m%20from%20Japan.%0A 200 [21.85, 127.0.0.1:57665][0m
+ERROR 2024-11-17 20:40:41,123 log 85859 11056312320 Internal Server Error: /conversation_analysis/recording/34/analysis/
+ERROR 2024-11-17 20:40:41,124 runserver 85859 10754224128 [35;1mHTTP GET /conversation_analysis/recording/34/analysis/ 500 [1.37, 127.0.0.1:57842][0m
+INFO 2024-11-17 20:42:28,619 autoreload 85859 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/services.py changed, reloading.
+INFO 2024-11-17 20:42:33,135 autoreload 86038 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 20:42:45,147 runserver 86038 6122188800 [mHTTP GET /video_chat/video_lesson/ 200 [0.03, 127.0.0.1:58368][0m
+INFO 2024-11-17 20:42:45,183 runserver 86038 6122188800 [mHTTP GET /static/video_chat/css/video.css 200 [0.01, 127.0.0.1:58368][0m
+INFO 2024-11-17 20:42:45,185 runserver 86038 6122188800 [mHTTP GET /static/video_chat/js/video.js 200 [0.01, 127.0.0.1:58369][0m
+INFO 2024-11-17 20:42:45,507 runserver 86038 6122188800 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:58369][0m
+WARNING 2024-11-17 20:42:45,525 runserver 86038 6122188800 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:58369][0m
+INFO 2024-11-17 20:42:49,739 views 86038 6155841536 Found active room: Room1
+INFO 2024-11-17 20:42:49,748 views 86038 6139015168 Found active room: Room1
+INFO 2024-11-17 20:42:49,941 views 86038 6139015168 Generating token for identity: student
+INFO 2024-11-17 20:42:49,947 runserver 86038 6122188800 [mHTTP POST /video_chat/make_token/ 200 [0.80, 127.0.0.1:58400][0m
+INFO 2024-11-17 20:42:50,321 views 86038 6155841536 Generating token for identity: student
+INFO 2024-11-17 20:42:50,326 runserver 86038 6122188800 [mHTTP POST /video_chat/make_token/ 200 [1.18, 127.0.0.1:58401][0m
+INFO 2024-11-17 20:43:17,310 views 86038 6139015168 Recording complete handler started
+INFO 2024-11-17 20:43:17,312 views 86038 6139015168 Received data: {'RoomSid': 'RM2d8ffb140206d4daf57488dcb0d747f1', 'transcribe': True}
+INFO 2024-11-17 20:43:17,312 views 86038 6139015168 Processing room_sid: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:43:17,312 views 86038 6139015168 Fetching recording data...
+INFO 2024-11-17 20:43:17,313 views 86038 6139015168 Starting get_room_recordings for room_sid: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:43:17,536 views 86038 6139015168 Current session started at: 2024-11-17 11:39:32+00:00
+INFO 2024-11-17 20:43:27,810 views 86038 6139015168 Found 2 recordings on attempt 1
+INFO 2024-11-17 20:43:27,810 views 86038 6139015168 Found audio recording: RT2b6ce6a38dd0fbecac1be4cc20519bcd, status: completed
+INFO 2024-11-17 20:43:27,810 views 86038 6139015168 Found audio recording: RT77862f3e8bce15590d60bedcf3c0765f, status: completed
+DEBUG 2024-11-17 20:43:27,811 views 86038 6139015168 Processing latest recording RT2b6ce6a38dd0fbecac1be4cc20519bcd
+DEBUG 2024-11-17 20:43:27,811 views 86038 6139015168 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2b6ce6a38dd0fbecac1be4cc20519bcd/Media
+DEBUG 2024-11-17 20:43:39,015 views 86038 6139015168 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:43:39,018 views 86038 6139015168 Successfully processed latest recording from current session
+INFO 2024-11-17 20:43:39,018 views 86038 6139015168 Found 1 media files
+INFO 2024-11-17 20:43:42,271 runserver 86038 6122188800 [mHTTP POST /video_chat/recording-complete/ 200 [24.98, 127.0.0.1:58520][0m
+INFO 2024-11-17 20:43:42,348 views 86038 6139015168 Starting get_room_recordings for room_sid: RM2d8ffb140206d4daf57488dcb0d747f1
+INFO 2024-11-17 20:43:42,676 views 86038 6139015168 Current session started at: 2024-11-17 11:39:32+00:00
+INFO 2024-11-17 20:43:52,994 views 86038 6139015168 Found 2 recordings on attempt 1
+INFO 2024-11-17 20:43:52,995 views 86038 6139015168 Found audio recording: RT2b6ce6a38dd0fbecac1be4cc20519bcd, status: completed
+INFO 2024-11-17 20:43:52,995 views 86038 6139015168 Found audio recording: RT77862f3e8bce15590d60bedcf3c0765f, status: completed
+DEBUG 2024-11-17 20:43:52,995 views 86038 6139015168 Processing latest recording RT2b6ce6a38dd0fbecac1be4cc20519bcd
+DEBUG 2024-11-17 20:43:52,995 views 86038 6139015168 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT2b6ce6a38dd0fbecac1be4cc20519bcd/Media
+DEBUG 2024-11-17 20:44:04,494 views 86038 6139015168 Successfully got signed URL on attempt 1
+INFO 2024-11-17 20:44:04,502 views 86038 6139015168 Successfully processed latest recording from current session
+INFO 2024-11-17 20:44:04,502 views 86038 6139015168 Preparing recording data with ID: 35
+INFO 2024-11-17 20:44:04,515 runserver 86038 6122188800 [mHTTP GET /video_chat/player/?room_sid=RM2d8ffb140206d4daf57488dcb0d747f1&transcript=Can%20you%20hear%20and%20see%20me%20clearly%3F%20Yes%2C%20I%20can%20hear%20you.%20How%20was%20your%20day%3F%20It%27s%20normal.%0A 200 [22.18, 127.0.0.1:58520][0m
+INFO 2024-11-17 20:44:23,922 runserver 86038 6122188800 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.86, 127.0.0.1:58804][0m
+INFO 2024-11-17 20:44:24,464 runserver 86038 6122188800 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.52, 127.0.0.1:58804][0m
+INFO 2024-11-17 20:44:36,809 runserver 86038 6122188800 [mHTTP GET /admin/conversation_analysis/conversationanalysis/ 200 [0.08, 127.0.0.1:58869][0m
+INFO 2024-11-17 20:44:39,465 runserver 86038 6122188800 [mHTTP GET /admin/conversation_analysis/conversationanalysis/15/change/ 200 [0.04, 127.0.0.1:58869][0m
+INFO 2024-11-17 20:44:39,492 runserver 86038 6122188800 [mHTTP GET /admin/jsi18n/ 200 [0.01, 127.0.0.1:58869][0m
+INFO 2024-11-17 21:04:57,725 autoreload 86038 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-17 21:05:02,606 autoreload 86390 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 21:05:38,702 autoreload 86390 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-17 21:05:42,476 autoreload 86456 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 21:16:02,454 runserver 86456 6177746944 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.96, 127.0.0.1:64759][0m
+INFO 2024-11-17 21:17:36,640 autoreload 86815 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-17 21:17:44,722 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.88, 127.0.0.1:64792][0m
+INFO 2024-11-17 21:19:12,138 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.49, 127.0.0.1:64810][0m
+INFO 2024-11-17 21:19:20,611 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.56, 127.0.0.1:64824][0m
+INFO 2024-11-17 21:19:21,084 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.45, 127.0.0.1:64824][0m
+INFO 2024-11-17 21:19:23,700 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/35/analysis/ 200 [0.45, 127.0.0.1:64824][0m
+INFO 2024-11-17 21:19:23,753 runserver 86815 6187249664 [mHTTP GET /static/conversation_analysis/css/analysis.css 200 [0.01, 127.0.0.1:64825][0m
+INFO 2024-11-17 21:19:23,754 runserver 86815 6187249664 [mHTTP GET /static/conversation_analysis/js/analysis.js 200 [0.01, 127.0.0.1:64824][0m
+INFO 2024-11-17 21:19:23,854 runserver 86815 6187249664 [32mHTTP GET /favicon.ico 302 [0.00, 127.0.0.1:64824][0m
+WARNING 2024-11-17 21:19:23,877 runserver 86815 6187249664 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:64824][0m
+INFO 2024-11-17 21:55:27,263 views 86815 6204076032 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-17 21:55:28,484 views 86815 6204076032 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-17 21:55:29,696 views 86815 6204076032 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-17 21:55:30,686 views 86815 6220902400 Created new room: Room1 (SID: RMc8ed10e21ebb51babe48c7cf27149c66)
+INFO 2024-11-17 21:55:30,901 views 86815 6204076032 Found room created by another process: Room1
+INFO 2024-11-17 21:55:31,106 views 86815 6204076032 Generating token for identity: student
+INFO 2024-11-17 21:55:31,111 runserver 86815 6187249664 [mHTTP POST /video_chat/make_token/ 200 [5.68, 127.0.0.1:49575][0m
+INFO 2024-11-17 21:55:32,146 views 86815 6220902400 Successfully set recording rules for room: RMc8ed10e21ebb51babe48c7cf27149c66
+INFO 2024-11-17 21:55:32,148 views 86815 6220902400 Generating token for identity: student
+INFO 2024-11-17 21:55:32,154 runserver 86815 6187249664 [mHTTP POST /video_chat/make_token/ 200 [6.72, 127.0.0.1:49576][0m
+INFO 2024-11-17 21:58:11,691 views 86815 6204076032 Recording complete handler started
+INFO 2024-11-17 21:58:11,693 views 86815 6204076032 Received data: {'RoomSid': 'RMc8ed10e21ebb51babe48c7cf27149c66', 'transcribe': True}
+INFO 2024-11-17 21:58:11,693 views 86815 6204076032 Processing room_sid: RMc8ed10e21ebb51babe48c7cf27149c66
+INFO 2024-11-17 21:58:11,693 views 86815 6204076032 Fetching recording data...
+INFO 2024-11-17 21:58:11,693 views 86815 6204076032 Starting get_room_recordings for room_sid: RMc8ed10e21ebb51babe48c7cf27149c66
+INFO 2024-11-17 21:58:12,348 views 86815 6204076032 Current session started at: 2024-11-17 12:55:30+00:00
+INFO 2024-11-17 21:58:22,589 views 86815 6204076032 Found 1 recordings on attempt 1
+INFO 2024-11-17 21:58:22,590 views 86815 6204076032 Found audio recording: RT38ef05436500fc22ea97ac0488fbee35, status: completed
+DEBUG 2024-11-17 21:58:22,590 views 86815 6204076032 Processing latest recording RT38ef05436500fc22ea97ac0488fbee35
+DEBUG 2024-11-17 21:58:22,590 views 86815 6204076032 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT38ef05436500fc22ea97ac0488fbee35/Media
+DEBUG 2024-11-17 21:58:24,453 views 86815 6204076032 Successfully got signed URL on attempt 1
+INFO 2024-11-17 21:58:24,459 views 86815 6204076032 Successfully processed latest recording from current session
+INFO 2024-11-17 21:58:24,459 views 86815 6204076032 Found 1 media files
+INFO 2024-11-17 21:58:34,525 runserver 86815 6187249664 [mHTTP POST /video_chat/recording-complete/ 200 [22.84, 127.0.0.1:49597][0m
+INFO 2024-11-17 21:58:34,658 views 86815 6204076032 Starting get_room_recordings for room_sid: RMc8ed10e21ebb51babe48c7cf27149c66
+INFO 2024-11-17 21:58:34,863 views 86815 6204076032 Current session started at: 2024-11-17 12:55:30+00:00
+INFO 2024-11-17 21:58:45,102 views 86815 6204076032 Found 1 recordings on attempt 1
+INFO 2024-11-17 21:58:45,104 views 86815 6204076032 Found audio recording: RT38ef05436500fc22ea97ac0488fbee35, status: completed
+DEBUG 2024-11-17 21:58:45,105 views 86815 6204076032 Processing latest recording RT38ef05436500fc22ea97ac0488fbee35
+DEBUG 2024-11-17 21:58:45,105 views 86815 6204076032 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT38ef05436500fc22ea97ac0488fbee35/Media
+DEBUG 2024-11-17 21:58:56,799 views 86815 6204076032 Successfully got signed URL on attempt 1
+INFO 2024-11-17 21:58:56,805 views 86815 6204076032 Successfully processed latest recording from current session
+INFO 2024-11-17 21:58:56,805 views 86815 6204076032 Preparing recording data with ID: 36
+INFO 2024-11-17 21:58:56,822 runserver 86815 6187249664 [mHTTP GET /video_chat/player/?room_sid=RMc8ed10e21ebb51babe48c7cf27149c66&transcript=A%20ramen%20shop%20in%20Yame%20City%20enforced%20a%20no%20entry%20for%20under%2018s%20rule%2C%20stirring%20public%20debate.%20Additional%20strict%20rules%2C%20like%20no%20talking%20or%20phone%20use%2C%20aim%20to%20create%20a%20focused%20dining%20atmosphere.%20The%20policy%20reflected%20the%20owner%27s%20commitment%20to%20enhancing%20customer%20experience%20through%20un-distracting%20dining.%20Owner%20Takahiro%20Miura%20opened%20the%20shop%20in%202018.%20Initially%2C%20it%20sold%20few%20patrons%2C%20but%20a%202020%20TV%20feature%20made%20it%20popular%2C%20leading%20to%20a%20daily%20line%20to%20manage%20the%20growing%20number%20of%20customers.%20Miura%20created%20new%20rules%20to%20make%20service%20smooth%20and%20fair%2C%20especially%20due%20to%20the%20shop%27s%20small%20size.%20One%20major%20change%20was%20stopping%20people%20from%20holding%20spots%20for%20their%20group.%20This%20rule%20was%20made%20to%20avoid%20problems%20from%20large%20groups%20arriving%20suddenly%2C%20which%20caused%20delays%20for%20other%20customers.%20With%20only%209%20seats%2C%20it%20was%20important%20to%20keep%20everything%20organized%20for%20everyone.%20The%20age%20rule%20was%20introduced%20to%20reduce%20conflicts%20with%20groups%2C%20especially%20those%20with%20children.%20Miura%20faced%20criticism%2C%20but%20stood%20firm%2C%20defending%20this%20rule%20as%20necessary%20to%20keep%20a%20respectful%20and%20well-run%20place.%20He%20continues%20to%20balance%20popularity%20and%20keep%20things%20in%20order.%0A 200 [22.18, 127.0.0.1:49597][0m
+INFO 2024-11-17 21:59:12,426 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/36/analysis/ 200 [3.48, 127.0.0.1:49622][0m
+INFO 2024-11-17 21:59:12,955 runserver 86815 6187249664 [mHTTP GET /conversation_analysis/recording/36/analysis/ 200 [0.49, 127.0.0.1:49622][0m
+INFO 2024-11-17 21:59:13,013 runserver 86815 6187249664 [36mHTTP GET /static/conversation_analysis/css/analysis.css 304 [0.00, 127.0.0.1:49622][0m
+INFO 2024-11-17 22:01:58,757 autoreload 86815 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/synonym_service.py changed, reloading.
+INFO 2024-11-17 22:02:03,582 autoreload 87399 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:13:13,324 autoreload 96882 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:13:37,836 runserver 96882 6181023744 [mHTTP GET /word_learning/ 200 [0.08, 127.0.0.1:63453][0m
+INFO 2024-11-18 19:13:46,965 runserver 96882 6181023744 [mHTTP GET /word_learning/login 200 [0.03, 127.0.0.1:63460][0m
+INFO 2024-11-18 19:13:52,676 runserver 96882 6181023744 [32mHTTP POST /word_learning/login 302 [0.34, 127.0.0.1:63463][0m
+INFO 2024-11-18 19:13:52,695 runserver 96882 6181023744 [32mHTTP GET /video_chat/video_lesson 301 [0.01, 127.0.0.1:63463][0m
+INFO 2024-11-18 19:13:52,702 runserver 96882 6181023744 [mHTTP GET /video_chat/video_lesson/ 200 [0.00, 127.0.0.1:63463][0m
+INFO 2024-11-18 19:13:52,776 runserver 96882 6181023744 [36mHTTP GET /static/video_chat/css/video.css 304 [0.00, 127.0.0.1:63464][0m
+INFO 2024-11-18 19:13:52,781 runserver 96882 6181023744 [mHTTP GET /static/video_chat/js/video.js 200 [0.01, 127.0.0.1:63463][0m
+INFO 2024-11-18 19:14:00,782 views 96882 6197850112 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-18 19:14:02,317 views 96882 6197850112 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-18 19:14:03,527 views 96882 6197850112 Waiting for lock on room: Room1 (attempt 3)
+WARNING 2024-11-18 19:14:04,732 views 96882 6197850112 Failed to acquire lock, attempting final room creation: Room1
+INFO 2024-11-18 19:14:04,769 views 96882 6231502848 Created new room: Room1 (SID: RM8f100b995d925762e3fb251f83464fa2)
+WARNING 2024-11-18 19:14:05,218 views 96882 6197850112 Room still exists, retrying after cleanup (attempt 1)
+INFO 2024-11-18 19:14:06,488 views 96882 6231502848 Successfully set recording rules for room: RM8f100b995d925762e3fb251f83464fa2
+INFO 2024-11-18 19:14:06,489 views 96882 6231502848 Generating token for identity: student
+INFO 2024-11-18 19:14:06,497 runserver 96882 6181023744 [mHTTP POST /video_chat/make_token/ 200 [6.79, 127.0.0.1:63476][0m
+WARNING 2024-11-18 19:14:07,460 views 96882 6197850112 Room still exists, retrying after cleanup (attempt 2)
+WARNING 2024-11-18 19:14:09,688 views 96882 6197850112 Room still exists, retrying after cleanup (attempt 3)
+INFO 2024-11-18 19:14:11,692 views 96882 6197850112 Generating token for identity: student
+ERROR 2024-11-18 19:14:11,696 views 96882 6197850112 Error in make_token: 'NoneType' object has no attribute 'sid'
+ERROR 2024-11-18 19:14:11,713 log 96882 6248329216 Internal Server Error: /video_chat/make_token/
+ERROR 2024-11-18 19:14:11,714 runserver 96882 6181023744 [35;1mHTTP POST /video_chat/make_token/ 500 [12.01, 127.0.0.1:63475][0m
+INFO 2024-11-18 19:14:32,602 views 96882 6197850112 Recording complete handler started
+INFO 2024-11-18 19:14:32,604 views 96882 6197850112 Received data: {'RoomSid': 'RM8f100b995d925762e3fb251f83464fa2', 'transcribe': True}
+INFO 2024-11-18 19:14:32,604 views 96882 6197850112 Processing room_sid: RM8f100b995d925762e3fb251f83464fa2
+INFO 2024-11-18 19:14:32,605 views 96882 6197850112 Fetching recording data...
+INFO 2024-11-18 19:14:32,605 views 96882 6197850112 Starting get_room_recordings for room_sid: RM8f100b995d925762e3fb251f83464fa2
+INFO 2024-11-18 19:14:32,835 views 96882 6197850112 Current session started at: 2024-11-18 10:14:04+00:00
+INFO 2024-11-18 19:14:43,319 views 96882 6197850112 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:14:43,319 views 96882 6197850112 Found audio recording: RTb7d532d1f50dea818c4654a36e22ee0c, status: completed
+DEBUG 2024-11-18 19:14:43,319 views 96882 6197850112 Processing latest recording RTb7d532d1f50dea818c4654a36e22ee0c
+DEBUG 2024-11-18 19:14:43,319 views 96882 6197850112 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTb7d532d1f50dea818c4654a36e22ee0c/Media
+DEBUG 2024-11-18 19:14:54,757 views 96882 6197850112 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:14:54,761 views 96882 6197850112 Successfully processed latest recording from current session
+INFO 2024-11-18 19:14:54,761 views 96882 6197850112 Found 1 media files
+INFO 2024-11-18 19:14:58,315 runserver 96882 6181023744 [mHTTP POST /video_chat/recording-complete/ 200 [25.73, 127.0.0.1:63486][0m
+INFO 2024-11-18 19:14:58,461 views 96882 6197850112 Starting get_room_recordings for room_sid: RM8f100b995d925762e3fb251f83464fa2
+INFO 2024-11-18 19:14:58,664 views 96882 6197850112 Current session started at: 2024-11-18 10:14:04+00:00
+INFO 2024-11-18 19:15:09,189 views 96882 6197850112 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:15:09,190 views 96882 6197850112 Found audio recording: RTb7d532d1f50dea818c4654a36e22ee0c, status: completed
+DEBUG 2024-11-18 19:15:09,190 views 96882 6197850112 Processing latest recording RTb7d532d1f50dea818c4654a36e22ee0c
+DEBUG 2024-11-18 19:15:09,190 views 96882 6197850112 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTb7d532d1f50dea818c4654a36e22ee0c/Media
+DEBUG 2024-11-18 19:15:20,190 views 96882 6197850112 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:15:20,198 views 96882 6197850112 Successfully processed latest recording from current session
+INFO 2024-11-18 19:15:20,199 views 96882 6197850112 Preparing recording data with ID: 37
+INFO 2024-11-18 19:15:20,214 runserver 96882 6181023744 [mHTTP GET /video_chat/player/?room_sid=RM8f100b995d925762e3fb251f83464fa2&transcript=Hello%2C%20can%20you%20hear%20and%20see%20it%20clearly%3F%0A 200 [21.76, 127.0.0.1:63486][0m
+INFO 2024-11-18 19:15:20,390 runserver 96882 6181023744 [36mHTTP GET /static/video_chat/css/player.css 304 [0.01, 127.0.0.1:63486][0m
+INFO 2024-11-18 19:15:20,393 runserver 96882 6181023744 [mHTTP GET /static/video_chat/js/recording_player.js 200 [0.01, 127.0.0.1:63513][0m
+INFO 2024-11-18 19:18:51,138 autoreload 96882 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/video_chat/views.py changed, reloading.
+INFO 2024-11-18 19:18:56,316 autoreload 97096 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:19:51,953 views 97096 6166917120 Starting get_room_recordings for room_sid: RM8f100b995d925762e3fb251f83464fa2
+INFO 2024-11-18 19:19:52,750 views 97096 6166917120 Current session started at: 2024-11-18 10:14:04+00:00
+INFO 2024-11-18 19:19:57,795 views 97096 10754224128 Starting get_room_recordings for room_sid: RM8f100b995d925762e3fb251f83464fa2
+INFO 2024-11-18 19:19:58,078 views 97096 10754224128 Current session started at: 2024-11-18 10:14:04+00:00
+INFO 2024-11-18 19:20:03,321 views 97096 6166917120 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:20:03,321 views 97096 6166917120 Found audio recording: RTb7d532d1f50dea818c4654a36e22ee0c, status: completed
+DEBUG 2024-11-18 19:20:03,322 views 97096 6166917120 Processing latest recording RTb7d532d1f50dea818c4654a36e22ee0c
+DEBUG 2024-11-18 19:20:03,322 views 97096 6166917120 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTb7d532d1f50dea818c4654a36e22ee0c/Media
+INFO 2024-11-18 19:20:08,595 views 97096 10754224128 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:20:08,595 views 97096 10754224128 Found audio recording: RTb7d532d1f50dea818c4654a36e22ee0c, status: completed
+DEBUG 2024-11-18 19:20:08,595 views 97096 10754224128 Processing latest recording RTb7d532d1f50dea818c4654a36e22ee0c
+DEBUG 2024-11-18 19:20:08,595 views 97096 10754224128 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTb7d532d1f50dea818c4654a36e22ee0c/Media
+DEBUG 2024-11-18 19:20:14,386 views 97096 6166917120 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:20:14,390 views 97096 6166917120 Successfully processed latest recording from current session
+INFO 2024-11-18 19:20:14,390 views 97096 6166917120 Preparing recording data with ID: 37
+INFO 2024-11-18 19:20:14,391 views 97096 6166917120 this is roomid 37
+DEBUG 2024-11-18 19:20:19,534 views 97096 10754224128 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:20:19,537 views 97096 10754224128 Successfully processed latest recording from current session
+INFO 2024-11-18 19:20:19,537 views 97096 10754224128 Preparing recording data with ID: 37
+INFO 2024-11-18 19:20:19,538 views 97096 10754224128 this is roomid 37
+INFO 2024-11-18 19:20:19,995 runserver 97096 6150090752 [mHTTP GET /video_chat/video_lesson/ 200 [0.01, 127.0.0.1:64671][0m
+INFO 2024-11-18 19:20:20,058 runserver 97096 6150090752 [mHTTP GET /static/video_chat/css/video.css 200 [0.02, 127.0.0.1:64671][0m
+INFO 2024-11-18 19:20:20,059 runserver 97096 6150090752 [mHTTP GET /static/video_chat/js/video.js 200 [0.02, 127.0.0.1:64672][0m
+INFO 2024-11-18 19:20:20,338 runserver 97096 6150090752 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:64672][0m
+WARNING 2024-11-18 19:20:20,355 runserver 97096 6150090752 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:64672][0m
+INFO 2024-11-18 19:20:39,487 views 97096 6166917120 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-18 19:20:41,005 views 97096 6166917120 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-18 19:20:42,541 views 97096 6166917120 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-18 19:20:43,514 views 97096 10754224128 Created new room: Room1 (SID: RMd5983884e2faefe627296045d9003cd9)
+INFO 2024-11-18 19:20:44,103 views 97096 6166917120 Found room created by another process: Room1
+INFO 2024-11-18 19:20:44,319 views 97096 6166917120 Generating token for identity: student
+INFO 2024-11-18 19:20:44,328 runserver 97096 6150090752 [mHTTP POST /video_chat/make_token/ 200 [5.23, 127.0.0.1:64754][0m
+INFO 2024-11-18 19:20:45,202 views 97096 10754224128 Successfully set recording rules for room: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 19:20:45,204 views 97096 10754224128 Generating token for identity: student
+INFO 2024-11-18 19:20:45,209 runserver 97096 6150090752 [mHTTP POST /video_chat/make_token/ 200 [6.11, 127.0.0.1:64755][0m
+INFO 2024-11-18 19:21:06,303 views 97096 6166917120 Recording complete handler started
+INFO 2024-11-18 19:21:06,306 views 97096 6166917120 Received data: {'RoomSid': 'RMd5983884e2faefe627296045d9003cd9', 'transcribe': True}
+INFO 2024-11-18 19:21:06,307 views 97096 6166917120 Processing room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 19:21:06,307 views 97096 6166917120 Fetching recording data...
+INFO 2024-11-18 19:21:06,307 views 97096 6166917120 Starting get_room_recordings for room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 19:21:06,516 views 97096 6166917120 Current session started at: 2024-11-18 10:20:43+00:00
+INFO 2024-11-18 19:21:16,851 views 97096 6166917120 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:21:16,853 views 97096 6166917120 Found audio recording: RT49652f283cd927399e25307e9be9c485, status: completed
+DEBUG 2024-11-18 19:21:16,853 views 97096 6166917120 Processing latest recording RT49652f283cd927399e25307e9be9c485
+DEBUG 2024-11-18 19:21:16,853 views 97096 6166917120 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT49652f283cd927399e25307e9be9c485/Media
+DEBUG 2024-11-18 19:21:28,320 views 97096 6166917120 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:21:28,329 views 97096 6166917120 Successfully processed latest recording from current session
+INFO 2024-11-18 19:21:28,330 views 97096 6166917120 Found 1 media files
+INFO 2024-11-18 19:21:31,005 runserver 97096 6150090752 [mHTTP POST /video_chat/recording-complete/ 200 [24.71, 127.0.0.1:64877][0m
+INFO 2024-11-18 19:21:31,108 views 97096 6166917120 Starting get_room_recordings for room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 19:21:31,305 views 97096 6166917120 Current session started at: 2024-11-18 10:20:43+00:00
+INFO 2024-11-18 19:21:41,529 views 97096 6166917120 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:21:41,529 views 97096 6166917120 Found audio recording: RT49652f283cd927399e25307e9be9c485, status: completed
+DEBUG 2024-11-18 19:21:41,530 views 97096 6166917120 Processing latest recording RT49652f283cd927399e25307e9be9c485
+DEBUG 2024-11-18 19:21:41,530 views 97096 6166917120 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT49652f283cd927399e25307e9be9c485/Media
+DEBUG 2024-11-18 19:21:52,520 views 97096 6166917120 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:21:52,523 views 97096 6166917120 Successfully processed latest recording from current session
+INFO 2024-11-18 19:21:52,523 views 97096 6166917120 Preparing recording data with ID: 38
+INFO 2024-11-18 19:21:52,524 views 97096 6166917120 this is roomid 38
+INFO 2024-11-18 19:21:52,529 runserver 97096 6150090752 [mHTTP GET /video_chat/player/?room_sid=RMd5983884e2faefe627296045d9003cd9&transcript=Hello%2C%20can%20you%20hear%20and%20see%20me%20clearly%3F%0A 200 [21.43, 127.0.0.1:64877][0m
+INFO 2024-11-18 19:24:01,942 runserver 97096 6150090752 [32mHTTP GET /admin/ 302 [0.06, 127.0.0.1:49236][0m
+INFO 2024-11-18 19:24:01,987 runserver 97096 6150090752 [mHTTP GET /admin/login/?next=/admin/ 200 [0.04, 127.0.0.1:49236][0m
+INFO 2024-11-18 19:24:02,083 runserver 97096 6150090752 [mHTTP GET /static/admin/css/base.css 200 [0.01, 127.0.0.1:49236][0m
+INFO 2024-11-18 19:24:02,084 runserver 97096 6150090752 [mHTTP GET /static/admin/css/responsive.css 200 [0.01, 127.0.0.1:49237][0m
+INFO 2024-11-18 19:24:06,826 runserver 97096 6150090752 [32mHTTP POST /admin/login/?next=/admin/ 302 [0.34, 127.0.0.1:49256][0m
+INFO 2024-11-18 19:24:06,863 runserver 97096 6150090752 [mHTTP GET /admin/ 200 [0.03, 127.0.0.1:49256][0m
+INFO 2024-11-18 19:24:11,507 runserver 97096 6150090752 [mHTTP GET /admin/video_chat/recording/ 200 [0.07, 127.0.0.1:49285][0m
+INFO 2024-11-18 19:24:11,562 runserver 97096 6150090752 [mHTTP GET /static/admin/js/vendor/jquery/jquery.js 200 [0.02, 127.0.0.1:49286][0m
+INFO 2024-11-18 19:24:11,563 runserver 97096 6150090752 [mHTTP GET /static/admin/js/vendor/xregexp/xregexp.js 200 [0.02, 127.0.0.1:49287][0m
+INFO 2024-11-18 19:24:11,583 runserver 97096 6150090752 [mHTTP GET /admin/jsi18n/ 200 [0.04, 127.0.0.1:49285][0m
+INFO 2024-11-18 19:24:14,185 runserver 97096 6150090752 [mHTTP GET /admin/video_chat/recording/38/change/ 200 [0.07, 127.0.0.1:49303][0m
+INFO 2024-11-18 19:24:14,219 runserver 97096 6150090752 [mHTTP GET /admin/jsi18n/ 200 [0.01, 127.0.0.1:49303][0m
+WARNING 2024-11-18 19:27:40,269 log 97096 10771050496 Not Found: /video-chat/recordings/
+WARNING 2024-11-18 19:27:40,271 runserver 97096 6150090752 [33mHTTP GET /video-chat/recordings/ 404 [0.02, 127.0.0.1:50164][0m
+WARNING 2024-11-18 19:28:06,558 log 97096 10771050496 Not Found: /video-chat/recordings
+WARNING 2024-11-18 19:28:06,559 runserver 97096 6150090752 [33mHTTP GET /video-chat/recordings 404 [0.02, 127.0.0.1:50274][0m
+INFO 2024-11-18 19:28:20,151 runserver 97096 6150090752 [32mHTTP GET /video_chat/recordings 301 [0.02, 127.0.0.1:50330][0m
+ERROR 2024-11-18 19:28:20,217 log 97096 10771050496 Internal Server Error: /video_chat/recordings/
+Traceback (most recent call last):
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 518, in thread_handler
+    raise exc_info[1]
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 468, in __call__
+    ret = await asyncio.shield(exec_coro)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 522, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/views/decorators/http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "/Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/video_chat/views.py", line 600, in recording_list
+    return render(request, 'video_chat/recording_list.html', {
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: video_chat/recording_list.html
+ERROR 2024-11-18 19:28:20,223 runserver 97096 6150090752 [35;1mHTTP GET /video_chat/recordings/ 500 [0.07, 127.0.0.1:50330][0m
+INFO 2024-11-18 19:38:22,862 autoreload 97608 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:38:35,935 views 97608 6325039104 Starting get_room_recordings for room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 19:38:36,560 views 97608 6325039104 Current session started at: 2024-11-18 10:20:43+00:00
+INFO 2024-11-18 19:38:43,593 runserver 97608 6139932672 [mHTTP GET /video_chat/video_lesson/ 200 [0.03, 127.0.0.1:52899][0m
+INFO 2024-11-18 19:38:43,659 runserver 97608 6139932672 [mHTTP GET /static/video_chat/css/video.css 200 [0.01, 127.0.0.1:52900][0m
+INFO 2024-11-18 19:38:43,660 runserver 97608 6139932672 [mHTTP GET /static/video_chat/js/video.js 200 [0.02, 127.0.0.1:52899][0m
+INFO 2024-11-18 19:38:44,032 runserver 97608 6139932672 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:52899][0m
+WARNING 2024-11-18 19:38:44,046 runserver 97608 6139932672 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:52899][0m
+INFO 2024-11-18 19:38:47,077 views 97608 6325039104 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:38:47,077 views 97608 6325039104 Found audio recording: RT49652f283cd927399e25307e9be9c485, status: completed
+DEBUG 2024-11-18 19:38:47,077 views 97608 6325039104 Processing latest recording RT49652f283cd927399e25307e9be9c485
+DEBUG 2024-11-18 19:38:47,077 views 97608 6325039104 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT49652f283cd927399e25307e9be9c485/Media
+DEBUG 2024-11-18 19:38:48,112 views 97608 6325039104 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:38:48,115 views 97608 6325039104 Successfully processed latest recording from current session
+INFO 2024-11-18 19:38:48,115 views 97608 6325039104 Preparing recording data with ID: 38
+INFO 2024-11-18 19:38:48,115 views 97608 6325039104 this is roomid 38
+INFO 2024-11-18 19:38:49,252 views 97608 6341865472 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-18 19:38:50,746 views 97608 6341865472 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-18 19:38:52,274 views 97608 6341865472 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-18 19:38:52,656 views 97608 6325039104 Created new room: Room1 (SID: RMe929c9d76b2c8cbcd1c8b011dc07d390)
+INFO 2024-11-18 19:38:53,478 views 97608 6341865472 Found room created by another process: Room1
+INFO 2024-11-18 19:38:53,697 views 97608 6341865472 Generating token for identity: student
+INFO 2024-11-18 19:38:53,707 runserver 97608 6139932672 [mHTTP POST /video_chat/make_token/ 200 [4.71, 127.0.0.1:52931][0m
+INFO 2024-11-18 19:38:54,461 views 97608 6325039104 Successfully set recording rules for room: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:38:54,462 views 97608 6325039104 Generating token for identity: student
+INFO 2024-11-18 19:38:54,466 runserver 97608 6139932672 [mHTTP POST /video_chat/make_token/ 200 [5.47, 127.0.0.1:52930][0m
+INFO 2024-11-18 19:39:17,734 views 97608 6325039104 Recording complete handler started
+INFO 2024-11-18 19:39:17,735 views 97608 6325039104 Received data: {'RoomSid': 'RMe929c9d76b2c8cbcd1c8b011dc07d390', 'transcribe': True}
+INFO 2024-11-18 19:39:17,735 views 97608 6325039104 Processing room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:39:17,735 views 97608 6325039104 Fetching recording data...
+INFO 2024-11-18 19:39:17,735 views 97608 6325039104 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:39:18,226 views 97608 6325039104 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:39:28,758 views 97608 6325039104 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:39:28,758 views 97608 6325039104 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:39:28,758 views 97608 6325039104 Processing latest recording RT19b5ddf533229ae4cb1676daf3095cd0
+DEBUG 2024-11-18 19:39:28,758 views 97608 6325039104 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT19b5ddf533229ae4cb1676daf3095cd0/Media
+DEBUG 2024-11-18 19:39:39,817 views 97608 6325039104 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:39:39,825 views 97608 6325039104 Successfully processed latest recording from current session
+INFO 2024-11-18 19:39:39,825 views 97608 6325039104 Found 1 media files
+INFO 2024-11-18 19:39:42,852 runserver 97608 6139932672 [mHTTP POST /video_chat/recording-complete/ 200 [25.15, 127.0.0.1:53057][0m
+INFO 2024-11-18 19:39:43,043 views 97608 6325039104 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:39:43,272 views 97608 6325039104 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:39:53,500 views 97608 6325039104 Found 1 recordings on attempt 1
+INFO 2024-11-18 19:39:53,501 views 97608 6325039104 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:39:53,501 views 97608 6325039104 Processing latest recording RT19b5ddf533229ae4cb1676daf3095cd0
+DEBUG 2024-11-18 19:39:53,501 views 97608 6325039104 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT19b5ddf533229ae4cb1676daf3095cd0/Media
+DEBUG 2024-11-18 19:39:54,840 views 97608 6325039104 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:39:54,845 views 97608 6325039104 Successfully processed latest recording from current session
+INFO 2024-11-18 19:39:54,846 views 97608 6325039104 Preparing recording data with ID: 39
+INFO 2024-11-18 19:39:54,846 views 97608 6325039104 this is roomid 39
+INFO 2024-11-18 19:39:54,855 runserver 97608 6139932672 [mHTTP GET /video_chat/player/?room_sid=RMe929c9d76b2c8cbcd1c8b011dc07d390&transcript=Hello%2C%20can%20you%20hear%20and%20see%20me%20clearly%3F%0A 200 [11.84, 127.0.0.1:53057][0m
+INFO 2024-11-18 19:40:22,198 runserver 97608 6139932672 [mHTTP GET /conversation_analysis/recording/39/analysis/ 200 [0.99, 127.0.0.1:53330][0m
+INFO 2024-11-18 19:40:22,737 runserver 97608 6139932672 [mHTTP GET /conversation_analysis/recording/39/analysis/ 200 [0.50, 127.0.0.1:53330][0m
+INFO 2024-11-18 19:40:22,856 runserver 97608 6139932672 [36mHTTP GET /static/conversation_analysis/js/analysis.js 304 [0.00, 127.0.0.1:53336][0m
+INFO 2024-11-18 19:40:22,857 runserver 97608 6139932672 [36mHTTP GET /static/conversation_analysis/css/analysis.css 304 [0.01, 127.0.0.1:53330][0m
+INFO 2024-11-18 19:43:05,810 autoreload 97769 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:43:19,407 runserver 97769 10754224128 [mHTTP GET /video_chat/video_lesson/ 200 [0.05, 127.0.0.1:54062][0m
+INFO 2024-11-18 19:43:19,606 runserver 97769 10754224128 [mHTTP GET /static/video_chat/js/video.js 200 [0.10, 127.0.0.1:54062][0m
+INFO 2024-11-18 19:43:19,609 runserver 97769 10754224128 [mHTTP GET /static/video_chat/css/video.css 200 [0.10, 127.0.0.1:54063][0m
+INFO 2024-11-18 19:43:19,917 runserver 97769 10754224128 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:54063][0m
+WARNING 2024-11-18 19:43:19,940 runserver 97769 10754224128 [33mHTTP GET /static/favicon.ico 404 [0.02, 127.0.0.1:54063][0m
+INFO 2024-11-18 19:43:21,383 runserver 97769 10754224128 [mHTTP GET /video_chat/video_lesson/ 200 [0.01, 127.0.0.1:54063][0m
+INFO 2024-11-18 19:43:21,457 runserver 97769 10754224128 [mHTTP GET /static/video_chat/css/video.css 200 [0.01, 127.0.0.1:54086][0m
+INFO 2024-11-18 19:43:21,458 runserver 97769 10754224128 [mHTTP GET /static/video_chat/js/video.js 200 [0.01, 127.0.0.1:54087][0m
+INFO 2024-11-18 19:43:21,756 runserver 97769 10754224128 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:54087][0m
+WARNING 2024-11-18 19:43:21,774 runserver 97769 10754224128 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:54087][0m
+INFO 2024-11-18 19:43:26,977 views 97769 10771050496 Found active room: Room1
+INFO 2024-11-18 19:43:26,990 views 97769 10787876864 Found active room: Room1
+INFO 2024-11-18 19:43:27,655 views 97769 10771050496 Generating token for identity: student
+INFO 2024-11-18 19:43:27,657 views 97769 10787876864 Generating token for identity: student
+INFO 2024-11-18 19:43:27,664 runserver 97769 10754224128 [mHTTP POST /video_chat/make_token/ 200 [1.27, 127.0.0.1:54087][0m
+INFO 2024-11-18 19:43:27,664 runserver 97769 10754224128 [mHTTP POST /video_chat/make_token/ 200 [1.27, 127.0.0.1:54086][0m
+INFO 2024-11-18 19:43:51,475 views 97769 10771050496 Recording complete handler started
+INFO 2024-11-18 19:43:51,476 views 97769 10771050496 Received data: {'RoomSid': 'RMe929c9d76b2c8cbcd1c8b011dc07d390', 'transcribe': True}
+INFO 2024-11-18 19:43:51,476 views 97769 10771050496 Processing room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:43:51,476 views 97769 10771050496 Fetching recording data...
+INFO 2024-11-18 19:43:51,476 views 97769 10771050496 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:43:51,695 views 97769 10771050496 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:43:52,184 views 97769 10771050496 Found 2 recordings on attempt 1
+INFO 2024-11-18 19:43:52,185 views 97769 10771050496 Found audio recording: RT3afa58498c5349bd1d9a61a7baedd9d8, status: completed
+INFO 2024-11-18 19:43:52,185 views 97769 10771050496 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:43:52,185 views 97769 10771050496 Processing latest recording RT3afa58498c5349bd1d9a61a7baedd9d8
+DEBUG 2024-11-18 19:43:52,185 views 97769 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT3afa58498c5349bd1d9a61a7baedd9d8/Media
+DEBUG 2024-11-18 19:44:03,381 views 97769 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:44:03,385 views 97769 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-18 19:44:03,385 views 97769 10771050496 Found 1 media files
+INFO 2024-11-18 19:44:07,076 runserver 97769 10754224128 [mHTTP POST /video_chat/recording-complete/ 200 [15.62, 127.0.0.1:54217][0m
+INFO 2024-11-18 19:44:07,385 views 97769 10771050496 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:44:07,746 views 97769 10771050496 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:44:18,046 views 97769 10771050496 Found 2 recordings on attempt 1
+INFO 2024-11-18 19:44:18,046 views 97769 10771050496 Found audio recording: RT3afa58498c5349bd1d9a61a7baedd9d8, status: completed
+INFO 2024-11-18 19:44:18,046 views 97769 10771050496 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:44:18,046 views 97769 10771050496 Processing latest recording RT3afa58498c5349bd1d9a61a7baedd9d8
+DEBUG 2024-11-18 19:44:18,047 views 97769 10771050496 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT3afa58498c5349bd1d9a61a7baedd9d8/Media
+DEBUG 2024-11-18 19:44:29,107 views 97769 10771050496 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:44:29,115 views 97769 10771050496 Successfully processed latest recording from current session
+INFO 2024-11-18 19:44:29,115 views 97769 10771050496 Preparing recording data with ID: 40
+INFO 2024-11-18 19:44:29,116 views 97769 10771050496 this is roomid 40
+INFO 2024-11-18 19:44:29,129 runserver 97769 10754224128 [mHTTP GET /video_chat/player/?room_sid=RMe929c9d76b2c8cbcd1c8b011dc07d390&transcript=Can%20you%20hear%20and%20see%20me%20clearly%3F%20Yes%2C%20I%20can%20hear%20and%20see%20you%20clearly.%0A 200 [21.89, 127.0.0.1:54217][0m
+INFO 2024-11-18 19:47:35,169 autoreload 97963 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:47:41,148 runserver 97963 6106656768 [mHTTP GET /video_chat/video_lesson/ 200 [0.06, 127.0.0.1:55171][0m
+INFO 2024-11-18 19:47:41,330 runserver 97963 6106656768 [36mHTTP GET /static/video_chat/js/video.js 304 [0.06, 127.0.0.1:55171][0m
+INFO 2024-11-18 19:47:41,513 runserver 97963 6106656768 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:55171][0m
+WARNING 2024-11-18 19:47:41,526 runserver 97963 6106656768 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:55171][0m
+INFO 2024-11-18 19:47:43,391 runserver 97963 6106656768 [mHTTP GET /video_chat/video_lesson/ 200 [0.01, 127.0.0.1:55171][0m
+INFO 2024-11-18 19:47:43,487 runserver 97963 6106656768 [mHTTP GET /static/video_chat/js/video.js 200 [0.01, 127.0.0.1:55171][0m
+INFO 2024-11-18 19:47:43,487 runserver 97963 6106656768 [mHTTP GET /static/video_chat/css/video.css 200 [0.01, 127.0.0.1:55172][0m
+INFO 2024-11-18 19:47:43,830 runserver 97963 6106656768 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:55171][0m
+WARNING 2024-11-18 19:47:43,863 runserver 97963 6106656768 [33mHTTP GET /static/favicon.ico 404 [0.02, 127.0.0.1:55171][0m
+INFO 2024-11-18 19:47:52,147 views 97963 6373371904 Found active room: Room1
+INFO 2024-11-18 19:47:52,153 views 97963 6390198272 Found active room: Room1
+INFO 2024-11-18 19:47:52,658 views 97963 6390198272 Generating token for identity: student
+INFO 2024-11-18 19:47:52,660 views 97963 6373371904 Generating token for identity: student
+INFO 2024-11-18 19:47:52,726 runserver 97963 6106656768 [mHTTP POST /video_chat/make_token/ 200 [0.97, 127.0.0.1:55234][0m
+INFO 2024-11-18 19:47:52,727 runserver 97963 6106656768 [mHTTP POST /video_chat/make_token/ 200 [0.97, 127.0.0.1:55233][0m
+INFO 2024-11-18 19:48:17,610 views 97963 6383759360 Recording complete handler started
+INFO 2024-11-18 19:48:17,615 views 97963 6383759360 Received data: {'RoomSid': 'RMe929c9d76b2c8cbcd1c8b011dc07d390', 'transcribe': True}
+INFO 2024-11-18 19:48:17,615 views 97963 6383759360 Processing room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:48:17,615 views 97963 6383759360 Fetching recording data...
+INFO 2024-11-18 19:48:17,615 views 97963 6383759360 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:48:17,859 views 97963 6383759360 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:48:28,070 views 97963 6383759360 Found 3 recordings on attempt 1
+INFO 2024-11-18 19:48:28,070 views 97963 6383759360 Found audio recording: RTf1f13957ba92d92e19877f8ed563c957, status: completed
+INFO 2024-11-18 19:48:28,070 views 97963 6383759360 Found audio recording: RT3afa58498c5349bd1d9a61a7baedd9d8, status: completed
+INFO 2024-11-18 19:48:28,070 views 97963 6383759360 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:48:28,070 views 97963 6383759360 Processing latest recording RTf1f13957ba92d92e19877f8ed563c957
+DEBUG 2024-11-18 19:48:28,070 views 97963 6383759360 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTf1f13957ba92d92e19877f8ed563c957/Media
+DEBUG 2024-11-18 19:48:39,027 views 97963 6383759360 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:48:39,030 views 97963 6383759360 Successfully processed latest recording from current session
+INFO 2024-11-18 19:48:39,030 views 97963 6383759360 Found 1 media files
+INFO 2024-11-18 19:48:42,906 runserver 97963 6106656768 [mHTTP POST /video_chat/recording-complete/ 200 [25.33, 127.0.0.1:55348][0m
+INFO 2024-11-18 19:48:43,077 views 97963 6383759360 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:48:43,410 views 97963 6383759360 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:48:53,900 views 97963 6383759360 Found 3 recordings on attempt 1
+INFO 2024-11-18 19:48:53,901 views 97963 6383759360 Found audio recording: RTf1f13957ba92d92e19877f8ed563c957, status: completed
+INFO 2024-11-18 19:48:53,901 views 97963 6383759360 Found audio recording: RT3afa58498c5349bd1d9a61a7baedd9d8, status: completed
+INFO 2024-11-18 19:48:53,901 views 97963 6383759360 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:48:53,901 views 97963 6383759360 Processing latest recording RTf1f13957ba92d92e19877f8ed563c957
+DEBUG 2024-11-18 19:48:53,901 views 97963 6383759360 Getting signed URL for: https://video.twilio.com/v1/Recordings/RTf1f13957ba92d92e19877f8ed563c957/Media
+DEBUG 2024-11-18 19:49:04,888 views 97963 6383759360 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:49:04,892 views 97963 6383759360 Successfully processed latest recording from current session
+INFO 2024-11-18 19:49:04,892 views 97963 6383759360 Preparing recording data with ID: 41
+INFO 2024-11-18 19:49:04,892 views 97963 6383759360 this is roomid 41
+INFO 2024-11-18 19:49:04,902 runserver 97963 6106656768 [mHTTP GET /video_chat/player/?room_sid=RMe929c9d76b2c8cbcd1c8b011dc07d390&transcript=You%20are%20arrogant.%20You%20should%20be%20more%20polite.%0A 200 [21.84, 127.0.0.1:55348][0m
+INFO 2024-11-18 19:52:26,882 autoreload 98129 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 19:52:40,059 runserver 98129 6154383360 [mHTTP GET /video_chat/video_lesson/ 200 [0.02, 127.0.0.1:56448][0m
+INFO 2024-11-18 19:52:40,128 runserver 98129 6154383360 [mHTTP GET /static/video_chat/css/video.css 200 [0.02, 127.0.0.1:56448][0m
+INFO 2024-11-18 19:52:40,129 runserver 98129 6154383360 [mHTTP GET /static/video_chat/js/video.js 200 [0.02, 127.0.0.1:56449][0m
+INFO 2024-11-18 19:52:40,441 runserver 98129 6154383360 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:56449][0m
+WARNING 2024-11-18 19:52:40,461 runserver 98129 6154383360 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:56449][0m
+INFO 2024-11-18 19:52:44,797 views 98129 6171209728 Found active room: Room1
+INFO 2024-11-18 19:52:44,798 views 98129 10888441856 Found active room: Room1
+INFO 2024-11-18 19:52:45,328 views 98129 6171209728 Generating token for identity: student
+INFO 2024-11-18 19:52:45,330 views 98129 10888441856 Generating token for identity: student
+INFO 2024-11-18 19:52:45,335 runserver 98129 6154383360 [mHTTP POST /video_chat/make_token/ 200 [1.22, 127.0.0.1:56449][0m
+INFO 2024-11-18 19:52:45,336 runserver 98129 6154383360 [mHTTP POST /video_chat/make_token/ 200 [1.22, 127.0.0.1:56448][0m
+INFO 2024-11-18 19:53:07,073 views 98129 6171209728 Recording complete handler started
+INFO 2024-11-18 19:53:07,075 views 98129 6171209728 Received data: {'RoomSid': 'RMe929c9d76b2c8cbcd1c8b011dc07d390', 'transcribe': True}
+INFO 2024-11-18 19:53:07,076 views 98129 6171209728 Processing room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:53:07,076 views 98129 6171209728 Fetching recording data...
+INFO 2024-11-18 19:53:07,076 views 98129 6171209728 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:53:07,323 views 98129 6171209728 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:53:17,903 views 98129 6171209728 Found 4 recordings on attempt 1
+INFO 2024-11-18 19:53:17,904 views 98129 6171209728 Found audio recording: RT55734e81ffaeb66adb1151feb938bddb, status: completed
+INFO 2024-11-18 19:53:17,904 views 98129 6171209728 Found audio recording: RTf1f13957ba92d92e19877f8ed563c957, status: completed
+INFO 2024-11-18 19:53:17,905 views 98129 6171209728 Found audio recording: RT3afa58498c5349bd1d9a61a7baedd9d8, status: completed
+INFO 2024-11-18 19:53:17,905 views 98129 6171209728 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:53:17,905 views 98129 6171209728 Processing latest recording RT55734e81ffaeb66adb1151feb938bddb
+DEBUG 2024-11-18 19:53:17,905 views 98129 6171209728 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT55734e81ffaeb66adb1151feb938bddb/Media
+DEBUG 2024-11-18 19:53:28,950 views 98129 6171209728 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:53:28,955 views 98129 6171209728 Successfully processed latest recording from current session
+INFO 2024-11-18 19:53:28,955 views 98129 6171209728 Found 1 media files
+INFO 2024-11-18 19:53:31,522 runserver 98129 6154383360 [mHTTP POST /video_chat/recording-complete/ 200 [24.46, 127.0.0.1:56570][0m
+INFO 2024-11-18 19:53:31,640 views 98129 6171209728 Starting get_room_recordings for room_sid: RMe929c9d76b2c8cbcd1c8b011dc07d390
+INFO 2024-11-18 19:53:31,864 views 98129 6171209728 Current session started at: 2024-11-18 10:38:52+00:00
+INFO 2024-11-18 19:53:42,362 views 98129 6171209728 Found 4 recordings on attempt 1
+INFO 2024-11-18 19:53:42,363 views 98129 6171209728 Found audio recording: RT55734e81ffaeb66adb1151feb938bddb, status: completed
+INFO 2024-11-18 19:53:42,363 views 98129 6171209728 Found audio recording: RTf1f13957ba92d92e19877f8ed563c957, status: completed
+INFO 2024-11-18 19:53:42,363 views 98129 6171209728 Found audio recording: RT3afa58498c5349bd1d9a61a7baedd9d8, status: completed
+INFO 2024-11-18 19:53:42,363 views 98129 6171209728 Found audio recording: RT19b5ddf533229ae4cb1676daf3095cd0, status: completed
+DEBUG 2024-11-18 19:53:42,363 views 98129 6171209728 Processing latest recording RT55734e81ffaeb66adb1151feb938bddb
+DEBUG 2024-11-18 19:53:42,363 views 98129 6171209728 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT55734e81ffaeb66adb1151feb938bddb/Media
+DEBUG 2024-11-18 19:53:53,400 views 98129 6171209728 Successfully got signed URL on attempt 1
+INFO 2024-11-18 19:53:53,408 views 98129 6171209728 Successfully processed latest recording from current session
+INFO 2024-11-18 19:53:53,408 views 98129 6171209728 Preparing recording data with ID: 42
+INFO 2024-11-18 19:53:53,408 views 98129 6171209728 this is roomid 42
+INFO 2024-11-18 19:53:53,423 runserver 98129 6154383360 [mHTTP GET /video_chat/player/?room_sid=RMe929c9d76b2c8cbcd1c8b011dc07d390&transcript=Hello%2C%20can%20you%20hear%20me%20clearly%3F%0A 200 [21.81, 127.0.0.1:56570][0m
+INFO 2024-11-18 20:06:03,471 views 98129 6171209728 Waiting for lock on room: Room1 (attempt 1)
+INFO 2024-11-18 20:06:04,708 views 98129 6171209728 Waiting for lock on room: Room1 (attempt 2)
+INFO 2024-11-18 20:06:06,181 views 98129 6171209728 Waiting for lock on room: Room1 (attempt 3)
+INFO 2024-11-18 20:06:07,222 views 98129 10888441856 Created new room: Room1 (SID: RM94e38d615959596be216b8dd90ddf547)
+INFO 2024-11-18 20:06:07,404 views 98129 6171209728 Found room created by another process: Room1
+INFO 2024-11-18 20:06:07,616 views 98129 6171209728 Generating token for identity: teacher
+INFO 2024-11-18 20:06:07,626 runserver 98129 6154383360 [mHTTP POST /video_chat/make_token/ 200 [4.57, 127.0.0.1:59785][0m
+INFO 2024-11-18 20:06:08,760 views 98129 10888441856 Successfully set recording rules for room: RM94e38d615959596be216b8dd90ddf547
+INFO 2024-11-18 20:06:08,762 views 98129 10888441856 Generating token for identity: teacher
+INFO 2024-11-18 20:06:08,777 runserver 98129 6154383360 [mHTTP POST /video_chat/make_token/ 200 [5.72, 127.0.0.1:59786][0m
+INFO 2024-11-18 20:06:14,792 runserver 98129 6154383360 [mHTTP GET /video_chat/video_lesson/ 200 [0.03, 127.0.0.1:59845][0m
+INFO 2024-11-18 20:06:14,891 runserver 98129 6154383360 [36mHTTP GET /static/video_chat/js/video.js 304 [0.02, 127.0.0.1:59845][0m
+INFO 2024-11-18 20:28:10,445 runserver 98129 6154383360 [mHTTP GET /admin/video_chat/recording/38/change/ 200 [0.24, 127.0.0.1:49199][0m
+INFO 2024-11-18 21:09:39,169 autoreload 99664 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 21:12:59,048 autoreload 99826 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 21:15:00,362 runserver 99826 6192803840 [32mHTTP GET /conversation_analysis/audio-player 301 [0.13, 127.0.0.1:60908][0m
+ERROR 2024-11-18 21:15:00,753 log 99826 10888441856 Internal Server Error: /conversation_analysis/audio-player/
+Traceback (most recent call last):
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 518, in thread_handler
+    raise exc_info[1]
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 468, in __call__
+    ret = await asyncio.shield(exec_coro)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 522, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py", line 110, in audio_player
+    return render(request, 'audio_player.html')
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: audio_player.html
+ERROR 2024-11-18 21:15:00,758 runserver 99826 6192803840 [35;1mHTTP GET /conversation_analysis/audio-player/ 500 [0.29, 127.0.0.1:60908][0m
+INFO 2024-11-18 21:18:59,970 autoreload 99826 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-18 21:19:06,196 autoreload 129 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 21:19:58,885 autoreload 129 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-18 21:20:02,894 autoreload 225 7995333696 Watching for file changes with StatReloader
+ERROR 2024-11-18 21:24:58,765 log 225 10905268224 Internal Server Error: /conversation_analysis/audio-player/
+Traceback (most recent call last):
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 518, in thread_handler
+    raise exc_info[1]
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 468, in __call__
+    ret = await asyncio.shield(exec_coro)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 522, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py", line 110, in audio_player
+    return render(request, 'audio_analysis.html')
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: audio_analysis.html
+ERROR 2024-11-18 21:24:58,773 runserver 225 6325039104 [35;1mHTTP GET /conversation_analysis/audio-player/ 500 [0.09, 127.0.0.1:63383][0m
+INFO 2024-11-18 21:25:30,045 autoreload 225 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-18 21:25:35,446 autoreload 360 7995333696 Watching for file changes with StatReloader
+ERROR 2024-11-18 21:25:42,290 log 360 10927271936 Internal Server Error: /conversation_analysis/audio-player/
+Traceback (most recent call last):
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/base.py", line 502, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 518, in thread_handler
+    raise exc_info[1]
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 468, in __call__
+    ret = await asyncio.shield(exec_coro)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/asgiref/sync.py", line 522, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py", line 110, in audio_player
+    return render(request, 'conversation_analysis/audio_analysis.html')
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    return parser.parse()
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/Users/yudi0/.pyenv/versions/3.10.7/lib/python3.10/site-packages/django/template/base.py", line 565, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 5: 'static'. Did you forget to register or load this tag?
+ERROR 2024-11-18 21:25:42,296 runserver 360 6160216064 [35;1mHTTP GET /conversation_analysis/audio-player/ 500 [0.10, 127.0.0.1:63572][0m
+INFO 2024-11-18 21:29:39,330 autoreload 564 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 21:29:45,852 runserver 564 6188265472 [mHTTP GET /conversation_analysis/audio-player/ 200 [0.03, 127.0.0.1:64593][0m
+INFO 2024-11-18 21:29:45,986 runserver 564 6188265472 [mHTTP GET /static/conversation_analysis/css/audio_analysis.css 200 [0.01, 127.0.0.1:64593][0m
+INFO 2024-11-18 21:29:45,987 runserver 564 6188265472 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.01, 127.0.0.1:64594][0m
+WARNING 2024-11-18 21:29:54,612 log 564 6255570944 Not Found: /generate-audio/
+WARNING 2024-11-18 21:29:54,616 runserver 564 6188265472 [33mHTTP POST /generate-audio/ 404 [0.02, 127.0.0.1:64639][0m
+INFO 2024-11-18 21:33:51,181 runserver 564 6188265472 [mHTTP GET /conversation_analysis/audio-player/ 200 [0.01, 127.0.0.1:49238][0m
+INFO 2024-11-18 21:33:51,253 runserver 564 6188265472 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.00, 127.0.0.1:49238][0m
+INFO 2024-11-18 21:33:51,255 runserver 564 6188265472 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.01, 127.0.0.1:49239][0m
+WARNING 2024-11-18 21:33:56,457 log 564 6255570944 Not Found: /conversation_analysis/audio-player/conversation_analysis/generate-audio/
+WARNING 2024-11-18 21:33:56,459 runserver 564 6188265472 [33mHTTP POST /conversation_analysis/audio-player/conversation_analysis/generate-audio/ 404 [0.02, 127.0.0.1:49262][0m
+INFO 2024-11-18 21:44:21,637 autoreload 564 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-18 21:44:27,135 autoreload 908 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 21:46:37,572 autoreload 908 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/urls.py changed, reloading.
+INFO 2024-11-18 21:46:45,859 autoreload 1157 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 21:47:40,329 autoreload 1157 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/urls.py changed, reloading.
+INFO 2024-11-18 21:47:46,676 autoreload 1218 7995333696 Watching for file changes with StatReloader
+WARNING 2024-11-18 21:47:55,418 log 1218 10927271936 Not Found: /conversation_analysis/audio-player/
+WARNING 2024-11-18 21:47:55,420 runserver 1218 6160183296 [33mHTTP GET /conversation_analysis/audio-player/ 404 [0.03, 127.0.0.1:52696][0m
+INFO 2024-11-18 21:48:08,107 runserver 1218 6160183296 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.03, 127.0.0.1:52760][0m
+INFO 2024-11-18 21:48:08,210 runserver 1218 6160183296 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.00, 127.0.0.1:52760][0m
+INFO 2024-11-18 21:48:08,220 runserver 1218 6160183296 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.01, 127.0.0.1:52761][0m
+INFO 2024-11-18 21:48:15,540 runserver 1218 6160183296 [mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 200 [2.61, 127.0.0.1:52782][0m
+INFO 2024-11-18 21:48:15,664 runserver 1218 6160183296 [mHTTP GET /conversation_analysis/audio-analysis/get-audio/reference_-5350227059328893228.wav 200 [0.02, 127.0.0.1:52782][0m
+INFO 2024-11-18 21:48:18,234 runserver 1218 6160183296 [32mHTTP GET /favicon.ico 302 [0.05, 127.0.0.1:52806][0m
+WARNING 2024-11-18 21:48:18,297 runserver 1218 6160183296 [33mHTTP GET /static/favicon.ico 404 [0.06, 127.0.0.1:52806][0m
+INFO 2024-11-18 22:15:23,579 runserver 1218 6160183296 [mHTTP GET /admin/video_chat/recording/38/change/ 200 [0.27, 127.0.0.1:59503][0m
+INFO 2024-11-18 22:22:36,603 autoreload 1218 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 22:22:42,248 autoreload 1680 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:37:34,947 autoreload 1680 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 22:37:40,389 autoreload 1913 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:45:27,107 autoreload 1913 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/urls.py changed, reloading.
+INFO 2024-11-18 22:45:36,735 autoreload 2124 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:46:53,408 autoreload 2124 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 22:47:01,761 autoreload 2237 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:50:39,939 autoreload 2237 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-18 22:50:48,321 autoreload 2398 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:52:17,254 autoreload 2607 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:53:52,031 autoreload 2607 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/urls.py changed, reloading.
+INFO 2024-11-18 22:53:57,447 autoreload 2625 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:54:16,684 runserver 2625 6181662720 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.02, 127.0.0.1:52884][0m
+INFO 2024-11-18 22:54:16,784 runserver 2625 6181662720 [mHTTP GET /static/conversation_analysis/css/audio_analysis.css 200 [0.01, 127.0.0.1:52884][0m
+INFO 2024-11-18 22:54:16,786 runserver 2625 6181662720 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.00, 127.0.0.1:52885][0m
+ERROR 2024-11-18 22:54:34,670 log 2625 10927271936 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 22:54:34,671 runserver 2625 6181662720 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [1.98, 127.0.0.1:52952][0m
+INFO 2024-11-18 22:56:39,373 autoreload 2625 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/views.py changed, reloading.
+INFO 2024-11-18 22:56:44,652 autoreload 2779 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 22:57:07,559 runserver 2779 6295990272 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.03, 127.0.0.1:53611][0m
+INFO 2024-11-18 22:57:07,698 runserver 2779 6295990272 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.01, 127.0.0.1:53611][0m
+INFO 2024-11-18 22:57:07,698 runserver 2779 6295990272 [36mHTTP GET /static/conversation_analysis/js/audio_analysis.js 304 [0.00, 127.0.0.1:53612][0m
+INFO 2024-11-18 22:57:11,129 runserver 2779 6295990272 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.01, 127.0.0.1:53612][0m
+INFO 2024-11-18 22:57:11,154 runserver 2779 6295990272 [mHTTP GET /static/conversation_analysis/css/audio_analysis.css 200 [0.01, 127.0.0.1:53612][0m
+INFO 2024-11-18 22:57:11,154 runserver 2779 6295990272 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.01, 127.0.0.1:53611][0m
+INFO 2024-11-18 22:57:11,277 runserver 2779 6295990272 [32mHTTP GET /favicon.ico 302 [0.00, 127.0.0.1:53611][0m
+WARNING 2024-11-18 22:57:11,289 runserver 2779 6295990272 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:53611][0m
+ERROR 2024-11-18 22:57:18,554 log 2779 10980864000 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 22:57:18,554 runserver 2779 6295990272 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [2.03, 127.0.0.1:53654][0m
+INFO 2024-11-18 23:01:34,637 autoreload 2779 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:01:39,614 autoreload 2948 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:01:50,981 runserver 2948 6118010880 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.03, 127.0.0.1:54786][0m
+INFO 2024-11-18 23:01:51,168 runserver 2948 6118010880 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.00, 127.0.0.1:54786][0m
+INFO 2024-11-18 23:01:51,176 runserver 2948 6118010880 [36mHTTP GET /static/conversation_analysis/js/audio_analysis.js 304 [0.00, 127.0.0.1:54786][0m
+INFO 2024-11-18 23:02:01,641 views 2948 10796265472 Starting get_room_recordings for room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 23:02:02,213 views 2948 10796265472 Current session started at: 2024-11-18 10:20:47+00:00
+INFO 2024-11-18 23:02:13,019 views 2948 10796265472 Found 1 recordings on attempt 1
+INFO 2024-11-18 23:02:13,020 views 2948 10796265472 Found audio recording: RT49652f283cd927399e25307e9be9c485, status: completed
+DEBUG 2024-11-18 23:02:13,020 views 2948 10796265472 Processing latest recording RT49652f283cd927399e25307e9be9c485
+DEBUG 2024-11-18 23:02:13,020 views 2948 10796265472 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT49652f283cd927399e25307e9be9c485/Media
+DEBUG 2024-11-18 23:02:24,147 views 2948 10796265472 Successfully got signed URL on attempt 1
+INFO 2024-11-18 23:02:24,151 views 2948 10796265472 Successfully processed latest recording from current session
+ERROR 2024-11-18 23:02:25,088 log 2948 10779439104 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 23:02:25,090 runserver 2948 6118010880 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [27.27, 127.0.0.1:54817][0m
+INFO 2024-11-18 23:09:07,843 autoreload 2948 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:09:15,348 autoreload 3104 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:09:30,954 runserver 3104 6330839040 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.05, 127.0.0.1:56717][0m
+INFO 2024-11-18 23:09:31,052 runserver 3104 6330839040 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.01, 127.0.0.1:56717][0m
+INFO 2024-11-18 23:09:31,052 runserver 3104 6330839040 [36mHTTP GET /static/conversation_analysis/js/audio_analysis.js 304 [0.01, 127.0.0.1:56718][0m
+INFO 2024-11-18 23:09:35,133 runserver 3104 6330839040 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.02, 127.0.0.1:56738][0m
+INFO 2024-11-18 23:09:35,196 runserver 3104 6330839040 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.01, 127.0.0.1:56739][0m
+INFO 2024-11-18 23:09:35,196 runserver 3104 6330839040 [mHTTP GET /static/conversation_analysis/css/audio_analysis.css 200 [0.01, 127.0.0.1:56738][0m
+INFO 2024-11-18 23:09:35,277 runserver 3104 6330839040 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:56738][0m
+WARNING 2024-11-18 23:09:35,296 runserver 3104 6330839040 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:56738][0m
+ERROR 2024-11-18 23:09:44,717 log 3104 10955698176 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 23:09:44,718 runserver 3104 6330839040 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [1.74, 127.0.0.1:56781][0m
+INFO 2024-11-18 23:10:08,568 autoreload 3104 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:10:16,784 autoreload 3171 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:10:29,683 runserver 3171 6158495744 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.20, 127.0.0.1:56995][0m
+INFO 2024-11-18 23:10:29,893 runserver 3171 6158495744 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:56995][0m
+WARNING 2024-11-18 23:10:29,941 runserver 3171 6158495744 [33mHTTP GET /static/favicon.ico 404 [0.03, 127.0.0.1:56995][0m
+INFO 2024-11-18 23:10:30,368 runserver 3171 6158495744 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.07, 127.0.0.1:56995][0m
+INFO 2024-11-18 23:10:31,693 runserver 3171 6158495744 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.08, 127.0.0.1:56995][0m
+INFO 2024-11-18 23:10:31,983 runserver 3171 6158495744 [mHTTP GET /static/conversation_analysis/js/audio_analysis.js 200 [0.15, 127.0.0.1:56996][0m
+INFO 2024-11-18 23:10:31,984 runserver 3171 6158495744 [mHTTP GET /static/conversation_analysis/css/audio_analysis.css 200 [0.15, 127.0.0.1:56995][0m
+INFO 2024-11-18 23:10:32,160 runserver 3171 6158495744 [32mHTTP GET /favicon.ico 302 [0.06, 127.0.0.1:56995][0m
+WARNING 2024-11-18 23:10:32,187 runserver 3171 6158495744 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:56995][0m
+ERROR 2024-11-18 23:10:38,203 log 3171 10977751040 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 23:10:38,204 runserver 3171 6158495744 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [1.82, 127.0.0.1:57032][0m
+INFO 2024-11-18 23:11:06,511 autoreload 3171 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:11:11,339 autoreload 3236 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:11:38,174 runserver 3236 10754224128 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.03, 127.0.0.1:57297][0m
+ERROR 2024-11-18 23:11:44,089 log 3236 10787876864 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 23:11:44,090 runserver 3236 10754224128 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [1.77, 127.0.0.1:57297][0m
+INFO 2024-11-18 23:13:36,497 autoreload 3236 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:13:43,205 autoreload 3379 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:13:51,289 runserver 3379 10754224128 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.02, 127.0.0.1:57855][0m
+INFO 2024-11-18 23:13:51,390 runserver 3379 10754224128 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.00, 127.0.0.1:57855][0m
+INFO 2024-11-18 23:13:51,390 runserver 3379 10754224128 [36mHTTP GET /static/conversation_analysis/js/audio_analysis.js 304 [0.00, 127.0.0.1:57856][0m
+INFO 2024-11-18 23:13:58,734 views 3379 10907316224 Starting get_room_recordings for room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 23:13:59,445 views 3379 10907316224 Current session started at: 2024-11-18 10:20:47+00:00
+INFO 2024-11-18 23:14:09,714 views 3379 10907316224 Found 1 recordings on attempt 1
+INFO 2024-11-18 23:14:09,715 views 3379 10907316224 Found audio recording: RT49652f283cd927399e25307e9be9c485, status: completed
+DEBUG 2024-11-18 23:14:09,715 views 3379 10907316224 Processing latest recording RT49652f283cd927399e25307e9be9c485
+DEBUG 2024-11-18 23:14:09,715 views 3379 10907316224 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT49652f283cd927399e25307e9be9c485/Media
+DEBUG 2024-11-18 23:14:20,717 views 3379 10907316224 Successfully got signed URL on attempt 1
+INFO 2024-11-18 23:14:20,720 views 3379 10907316224 Successfully processed latest recording from current session
+ERROR 2024-11-18 23:14:21,773 log 3379 10937823232 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 23:14:21,774 runserver 3379 10754224128 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [25.46, 127.0.0.1:57883][0m
+INFO 2024-11-18 23:16:31,558 autoreload 3379 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:16:39,064 autoreload 3497 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:17:05,137 runserver 3497 6111309824 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.02, 127.0.0.1:58686][0m
+INFO 2024-11-18 23:17:05,236 runserver 3497 6111309824 [36mHTTP GET /static/conversation_analysis/css/audio_analysis.css 304 [0.00, 127.0.0.1:58686][0m
+INFO 2024-11-18 23:17:05,238 runserver 3497 6111309824 [36mHTTP GET /static/conversation_analysis/js/audio_analysis.js 304 [0.00, 127.0.0.1:58687][0m
+ERROR 2024-11-18 23:17:12,682 log 3497 10965037056 Internal Server Error: /conversation_analysis/audio-analysis/generate-audio/
+ERROR 2024-11-18 23:17:12,684 runserver 3497 6111309824 [35;1mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 500 [1.59, 127.0.0.1:58717][0m
+INFO 2024-11-18 23:17:27,450 autoreload 3497 7995333696 /Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/conversation_analysis/service_audio.py changed, reloading.
+INFO 2024-11-18 23:17:35,380 autoreload 3619 7995333696 Watching for file changes with StatReloader
+INFO 2024-11-18 23:17:44,207 runserver 3619 6197112832 [mHTTP GET /conversation_analysis/audio-analysis/ 200 [0.02, 127.0.0.1:58867][0m
+INFO 2024-11-18 23:17:53,198 views 3619 10942967808 Starting get_room_recordings for room_sid: RMd5983884e2faefe627296045d9003cd9
+INFO 2024-11-18 23:17:54,421 views 3619 10942967808 Current session started at: 2024-11-18 10:20:47+00:00
+INFO 2024-11-18 23:18:05,237 views 3619 10942967808 Found 1 recordings on attempt 1
+INFO 2024-11-18 23:18:05,238 views 3619 10942967808 Found audio recording: RT49652f283cd927399e25307e9be9c485, status: completed
+DEBUG 2024-11-18 23:18:05,238 views 3619 10942967808 Processing latest recording RT49652f283cd927399e25307e9be9c485
+DEBUG 2024-11-18 23:18:05,238 views 3619 10942967808 Getting signed URL for: https://video.twilio.com/v1/Recordings/RT49652f283cd927399e25307e9be9c485/Media
+DEBUG 2024-11-18 23:18:16,252 views 3619 10942967808 Successfully got signed URL on attempt 1
+INFO 2024-11-18 23:18:16,282 views 3619 10942967808 Successfully processed latest recording from current session
+INFO 2024-11-18 23:18:17,182 runserver 3619 6197112832 [mHTTP POST /conversation_analysis/audio-analysis/generate-audio/ 200 [25.97, 127.0.0.1:58904][0m
+INFO 2024-11-18 23:18:17,207 runserver 3619 6197112832 [mHTTP GET /conversation_analysis/audio-analysis/get-audio/reference_683970991112421178.wav 200 [0.01, 127.0.0.1:58904][0m
+INFO 2024-11-18 23:18:17,210 runserver 3619 6197112832 [mHTTP GET /conversation_analysis/audio-analysis/get-audio/recording_RT49652f283cd927399e25307e9be9c485.wav 200 [0.01, 127.0.0.1:59019][0m
+INFO 2024-11-18 23:18:26,147 runserver 3619 6197112832 [32mHTTP GET /favicon.ico 302 [0.01, 127.0.0.1:59063][0m
+WARNING 2024-11-18 23:18:26,163 runserver 3619 6197112832 [33mHTTP GET /static/favicon.ico 404 [0.01, 127.0.0.1:59063][0m
