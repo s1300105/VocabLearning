@@ -74,8 +74,13 @@ def analysis_detail(request, recording_id):
 
         mltd_score = analysis.mltd_score
 
+        room_sid = recording.room_sid
+        transcript = recording.transcript
+
         context = {
-            'recording': recording,
+            
+            'room_sid':room_sid,
+            'transcript':transcript,
             'analysis': analysis,
             'freq_dict': freq_dict,
             'count_word': count_word,
@@ -104,34 +109,36 @@ def analysis_detail(request, recording_id):
             'details': str(e)
         }, status=500)
     
-
-def audio_analysis(request):  # 関数名を変更
-    """オーディオ分析ページを表示"""
-    return render(request, 'conversation_analysis/audio_analysis.html')
+def audio_analysis(request):
+    room_sid = request.GET.get('room_sid')  
+    transcript = request.GET.get('transcript')
+    return render(request, 'conversation_analysis/audio_analysis.html', {
+        'room_sid': room_sid,
+        'transcript': transcript
+    })
 
 @csrf_exempt
 def generate_audio(request):
-    """音声を生成してパスを返す"""
     if request.method == 'POST':
-        text = request.POST.get('text', '')
+        room_sid = request.POST.get('room_sid')
+        transcript = request.POST.get('transcript')
         try:
             system = PronunciationAnalysisSystem(openai_api_key)
-            audio_path = system.generate_reference_audio(text)
-            audio_path_recorded = system.get_room_recording("RMd5983884e2faefe627296045d9003cd9")
+            audio_path = system.generate_reference_audio(transcript)
+            audio_path_recorded = system.get_room_recording(room_sid)
 
-            return JsonResponse({'audio_path': audio_path, 
-                                 'audio_path_recorded': audio_path_recorded
-                                })
+            return JsonResponse({
+                'audio_path': audio_path,
+                'audio_path_recorded': audio_path_recorded
+            })
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def get_audio_file(request, filename):
-    """音声ファイルを提供"""
     file_path = os.path.join('temp_audio', filename)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
             response = HttpResponse(f.read(), content_type='audio/wav')
             return response
     return HttpResponse(status=404)
-

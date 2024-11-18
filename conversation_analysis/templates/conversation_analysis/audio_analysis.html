@@ -8,31 +8,33 @@
 
 
 {% block content %}
-<body></body>
+<body>
     <div class="container">
-        <div class="audio-section">
-            <h2>Reference Audio & Room Recording</h2>
-            <div class="audio-controls">
-                <input type="text" id="text-input" placeholder="Enter text to generate audio">
-                <button id="generate-btn">Generate Audio</button>
-                <div class="audio-players">
-                    <div class="player-container">
-                        <h3>Reference Audio</h3>
-                        <audio id="reference-audio-player" controls>
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                    <div class="player-container">
-                        <h3>Room Recording</h3>
-                        <audio id="recording-audio-player" controls>
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                </div>
+        <div class="comparison-container">
+            <!-- Model Audio (Transcript) -->
+            <div class="audio-section">
+                <h3>Model Pronunciation</h3>
+                <p class="transcript-text">{{ transcript }}</p>
+                <audio id="model-audio" controls>
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+
+            <!-- Learner's Recording -->
+            <div class="audio-section">
+                <h3>Your Recording</h3>
+                <audio id="learner-audio" controls>
+                    Your browser does not support the audio element.
+                </audio>
             </div>
         </div>
         <div id="message"></div>
     </div>
+
+    <script>
+        window.ROOM_SID = "{{ room_sid }}";
+        window.TRANSCRIPT = "{{ transcript }}";
+    </script>
 </body>
 {% endblock %}
 

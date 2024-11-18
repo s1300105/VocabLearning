@@ -7,8 +7,15 @@
 {% endblock %}
 
 {% block content %}
-<h2>{{ recording }}</h2>
 
+
+
+<!-- 音声分析ボタンを追加 -->
+<div class="audio-analysis-section mb-4">
+    <a href="{% url 'conversation_analysis:audio_analysis' %}?room_sid={{ room_sid }}&transcript={{ transcript }}" class="btn btn-primary">
+        <i class="fas fa-headphones"></i> Listen to Audio
+    </a>
+</div>
 
 
 
