@@ -11,6 +11,8 @@ from .service_audio import PronunciationAnalysisSystem
 from django.views.decorators.csrf import csrf_exempt
 import os
 from django.conf import settings
+from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 
@@ -142,3 +144,80 @@ def get_audio_file(request, filename):
             response = HttpResponse(f.read(), content_type='audio/wav')
             return response
     return HttpResponse(status=404)
+
+
+@csrf_exempt
+def analyze_pronunciation(request):
+    if request.method == 'POST':
+        room_sid = request.POST.get('room_sid')
+        transcript = request.POST.get('transcript')
+        try:
+            logger.info(f"Starting pronunciation analysis for room {room_sid}")
+            system = PronunciationAnalysisSystem(openai_api_key)
+            
+            result = system.analyze_pronunciation(room_sid, transcript)
+            
+            # 音声ファイルのパスを保存
+            response_data = {
+                'score': float(result['score']),
+                'total_words': len(result['word_comparisons']),
+                'word_comparisons': [],
+                'audio_paths': result['audio_paths']  # 追加
+            }
+            
+            for comp in result['word_comparisons']:
+                word_data = {
+                    'word': comp['word'],
+                    'difference_score': float(comp['difference_score']),
+                    'start_time': float(comp['start_time']),
+                    'end_time': float(comp['end_time']),
+                    'duration_difference': float(comp['duration_difference'])
+                }
+                response_data['word_comparisons'].append(word_data)
+            
+            response_data['word_comparisons'].sort(key=lambda x: x['difference_score'], reverse=True)
+            return JsonResponse(response_data)
+            
+        except Exception as e:
+            logger.error(f"Error in analyze_pronunciation: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+def get_audio_file(request, filename):
+    try:
+        file_path = os.path.join(settings.BASE_DIR, 'temp_audio', filename)
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type='audio/wav')
+                return response
+    except Exception as e:
+        logger.error(f"Error serving audio file: {e}")
+    return HttpResponse(status=404)
+
+
+
+def calculate_speaking_rate(word_comparisons):
+    """単語/分の発話速度を計算"""
+    if not word_comparisons:
+        return 0
+    
+    total_duration = calculate_total_duration(word_comparisons)
+    word_count = len(word_comparisons)
+    
+    # 分あたりの単語数を計算
+    if total_duration > 0:
+        return round((word_count / total_duration) * 60, 1)
+    return 0
+
+def calculate_total_duration(word_comparisons):
+    """総発話時間を計算（秒）"""
+    if not word_comparisons:
+        return 0
+    
+    last_word = max(word_comparisons, key=lambda x: x['end_time'])
+    first_word = min(word_comparisons, key=lambda x: x['start_time'])
+    
+    return round(last_word['end_time'] - first_word['start_time'], 1)

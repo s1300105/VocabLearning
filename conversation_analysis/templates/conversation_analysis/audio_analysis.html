@@ -5,41 +5,63 @@
 <link href="{% static 'conversation_analysis/css/audio_analysis.css' %}" rel="stylesheet">
 {% endblock %}
 
-
-
 {% block content %}
-<body>
-    <div class="container">
-        <div class="comparison-container">
-            <!-- Model Audio (Transcript) -->
-            <div class="audio-section">
-                <h3>Model Pronunciation</h3>
-                <p class="transcript-text">{{ transcript }}</p>
-                <audio id="model-audio" controls>
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-
-            <!-- Learner's Recording -->
-            <div class="audio-section">
-                <h3>Your Recording</h3>
-                <audio id="learner-audio" controls>
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
+<div class="container">
+    <div class="comparison-container">
+        <div class="audio-section">
+            <h3>Model Pronunciation</h3>
+            <div class="transcript-text">{{ transcript }}</div>
+            <audio id="model-audio" controls>
+                Your browser does not support the audio element.
+            </audio>
         </div>
-        <div id="message"></div>
+
+        <div class="audio-section">
+            <h3>Your Recording</h3>
+            <div class="transcript-text">{{ transcript }}</div>
+            <audio id="learner-audio" controls>
+                Your browser does not support the audio element.
+            </audio>
+        </div>
     </div>
 
-    <script>
-        window.ROOM_SID = "{{ room_sid }}";
-        window.TRANSCRIPT = "{{ transcript }}";
-    </script>
-</body>
+    <div id="analysis-result" class="analysis-section">
+        <h3>Pronunciation Analysis</h3>
+        <div class="score-container">
+            <div class="score-item">
+                <span>Overall Pronunciation Score:</span>
+                <span id="pronunciation-score">-</span>
+            </div>
+            <div class="score-item">
+                <span>Words Analyzed:</span>
+                <span id="words-analyzed">-</span>
+            </div>
+        </div>
+        
+        <div class="detailed-analysis">
+            <h4>Words Needing Improvement</h4>
+            <div class="word-comparison-list" id="word-comparisons">
+                <!-- Word comparisons will be inserted here -->
+            </div>
+        </div>
+
+        <!-- 文の再生用のオーディオプレイヤーを追加 -->
+        <div id="sentence-audio-section" class="audio-section" style="display: none;">
+            <h4>Sentence Playback</h4>
+            <div class="selected-word">Current word: <span id="current-word">-</span></div>
+            <div class="sentence-context">In sentence: <span id="current-sentence">-</span></div>
+            <audio id="sentence-audio" controls></audio>
+        </div>
+    </div>
+
+    <div id="message"></div>
+</div>
 {% endblock %}
 
-
 {% block extra_js %}
-
+<script>
+    window.ROOM_SID = "{{ room_sid }}";
+    window.TRANSCRIPT = "{{ transcript }}";
+</script>
 <script src="{% static 'conversation_analysis/js/audio_analysis.js' %}"></script>
 {% endblock %}

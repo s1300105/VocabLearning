@@ -13,6 +13,7 @@ urlpatterns = [
      path('audio-analysis/', views.audio_analysis, name='audio_analysis'),  # パス名を変更
      path('audio-analysis/generate-audio/', views.generate_audio, name='generate_audio'),
      path('audio-analysis/get-audio/<str:filename>', views.get_audio_file, name='get_audio_file'),
+     path('audio-analysis/analyze/', views.analyze_pronunciation, name='analyze_pronunciation'),
 
     #path('analyses/', 
          #views.analysis_list, 
