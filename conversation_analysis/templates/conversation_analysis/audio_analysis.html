@@ -1,66 +1,87 @@
 {% extends 'conversation_analysis/base.html' %}
 {% load static %}
 
+{% block title %}Pronunciation Check{% endblock %}
+
 {% block extra_css %}
 <link href="{% static 'conversation_analysis/css/audio_analysis.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="comparison-container">
-        <div class="audio-section">
-            <h3>Model Pronunciation</h3>
-            <div class="transcript-text">{{ transcript }}</div>
-            <audio id="model-audio" controls>
-                Your browser does not support the audio element.
-            </audio>
-        </div>
+<div class="pron-page">
+    <header class="pron-header">
+        <h1>Pronunciation check</h1>
+        <nav>
+            {% if is_read_aloud %}
+                <a href="{% url 'video_chat:solo_lesson' %}?mode=read">Read another sentence</a>
+            {% endif %}
+            <a href="{% url 'video_chat:recording_list' %}">My recordings</a>
+        </nav>
+    </header>
 
-        <div class="audio-section">
-            <h3>Your Recording</h3>
-            <div class="transcript-text">{{ transcript }}</div>
-            <audio id="learner-audio" controls>
-                Your browser does not support the audio element.
-            </audio>
-        </div>
-    </div>
+    <section class="pron-card">
+        <p class="pron-label">{% if is_read_aloud %}Sentence you read{% else %}What you said{% endif %}</p>
+        <div id="word-chips" class="word-chips">{{ text }}</div>
+        <p class="legend">
+            <span class="dot good"></span>Good
+            <span class="dot fair"></span>Almost
+            <span class="dot poor"></span>Needs practice
+            <span class="dot unscored"></span>Not checked
+        </p>
+    </section>
 
-    <div id="analysis-result" class="analysis-section">
-        <h3>Pronunciation Analysis</h3>
-        <div class="score-container">
-            <div class="score-item">
-                <span>Overall Pronunciation Score:</span>
-                <span id="pronunciation-score">-</span>
-            </div>
-            <div class="score-item">
-                <span>Words Analyzed:</span>
-                <span id="words-analyzed">-</span>
-            </div>
-        </div>
-        
-        <div class="detailed-analysis">
-            <h4>Words Needing Improvement</h4>
-            <div class="word-comparison-list" id="word-comparisons">
-                <!-- Word comparisons will be inserted here -->
-            </div>
-        </div>
+    <p id="status" class="pron-status" role="status">
+        Checking your pronunciation… The first check after the server starts loads the speech model and can take a minute.
+    </p>
 
-        <!-- 文の再生用のオーディオプレイヤーを追加 -->
-        <div id="sentence-audio-section" class="audio-section" style="display: none;">
-            <h4>Sentence Playback</h4>
-            <div class="selected-word">Current word: <span id="current-word">-</span></div>
-            <div class="sentence-context">In sentence: <span id="current-sentence">-</span></div>
-            <audio id="sentence-audio" controls></audio>
+    <section id="summary" class="pron-card summary" hidden>
+        <div class="overall">
+            <span id="overall-score" class="overall-score">-</span>
+            <span class="overall-label">Pronunciation<br>accuracy</span>
         </div>
-    </div>
+        <dl class="stats">
+            <div><dt>Speed</dt><dd id="speed">-</dd></div>
+            <div><dt>Long pauses</dt><dd id="pauses">-</dd></div>
+            <div><dt>Words checked</dt><dd id="checked">-</dd></div>
+        </dl>
+    </section>
 
-    <div id="message"></div>
+    <section id="word-detail" class="pron-card" hidden>
+        <div class="detail-head">
+            <h2 id="detail-word"></h2>
+            <span id="detail-score" class="score-badge"></span>
+            <button type="button" id="detail-play" class="play-button">▶ My voice</button>
+        </div>
+        <ol id="detail-phones" class="phone-list"></ol>
+        <ul id="detail-messages" class="messages"></ul>
+    </section>
+
+    <section id="issues-section" class="pron-card" hidden>
+        <h2>Sounds to practice</h2>
+        <ul id="issues" class="issues"></ul>
+        <p id="no-issues" class="muted" hidden>No clear problems found. Great job!</p>
+    </section>
+
+    <section class="pron-card">
+        <h2>Compare with a model voice</h2>
+        <p class="muted">The model voice is only for listening. It is not used for scoring.</p>
+        <button type="button" id="model-button">Listen to a model voice</button>
+        <audio id="model-audio" controls hidden></audio>
+        <p id="model-status" class="muted"></p>
+    </section>
+
+    <audio id="learner-audio" preload="auto" hidden></audio>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 {% csrf_token %}
 {{ room_sid|json_script:"room-sid-data" }}
-{{ transcript|json_script:"transcript-data" }}
+<script>
+    window.PRONUNCIATION_URLS = {
+        analyze: "{% url 'conversation_analysis:analyze_pronunciation' %}",
+        modelVoice: "{% url 'conversation_analysis:generate_audio' %}",
+    };
+</script>
 <script src="{% static 'conversation_analysis/js/audio_analysis.js' %}"></script>
 {% endblock %}

@@ -10,6 +10,11 @@
 </head>
 <body>
     <div class="container">
+        <nav class="lesson-nav">
+            <a href="{% url 'video_chat:solo_lesson' %}">Practice alone (solo)</a>
+            |
+            <a href="{% url 'video_chat:recording_list' %}">My recordings</a>
+        </nav>
         <div class="controls">
             <input type="text" id="room-name" placeholder="Enter room name" required>
             <select id="user-type" required>

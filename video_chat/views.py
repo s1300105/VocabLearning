@@ -12,8 +12,9 @@ import twilio.rest
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
-from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from openai import OpenAI
 from pydub import AudioSegment
@@ -21,7 +22,8 @@ from twilio.base.exceptions import TwilioRestException
 
 from .decorators import login_required_json
 from .models import Recording
-from .services import RecordingService
+from .services import InvalidSoloRecording, RecordingService, SoloRecordingService
+from .topics import random_sentence, random_topic
 
 logger = logging.getLogger('video_chat')
 
@@ -385,16 +387,25 @@ def player_view(request):
         logger.warning(f"No recording found for room_sid: {room_sid}")
         return render(request, 'video_chat/player.html', {'error_message': 'Recording not found'})
 
-    try:
-        media_files = get_room_recordings(room_sid)
-    except Exception:
-        logger.exception("Error in player_view")
-        return render(request, 'video_chat/player.html', {'error_message': 'Failed to load recordings'})
+    if recording.is_solo:
+        # 一人用レッスンの録音はサーバーに保存してあるので、所有者チェック付きのビューから配信する
+        media_file = {
+            'url': reverse('video_chat:solo_audio', args=[recording.id]),
+            'duration': recording.duration,
+            'created_at': recording.created_at.isoformat(),
+            'type': 'audio',
+        }
+    else:
+        try:
+            media_files = get_room_recordings(room_sid)
+        except Exception:
+            logger.exception("Error in player_view")
+            return render(request, 'video_chat/player.html', {'error_message': 'Failed to load recordings'})
 
-    if not media_files:
-        return render(request, 'video_chat/player.html', {'error_message': 'No recordings found for this room'})
+        if not media_files:
+            return render(request, 'video_chat/player.html', {'error_message': 'No recordings found for this room'})
+        media_file = media_files[0]
 
-    media_file = media_files[0]
     data_array = [{
         'url': media_file['url'],
         'duration': media_file['duration'],
@@ -408,7 +419,89 @@ def player_view(request):
         # URL パラメータではなく、保存済みの文字起こしを使う
         'transcript': recording.transcript,
         'recording_id': recording.id,
+        'topic': recording.topic,
+        'reference_text': recording.reference_text,
+        'pronunciation_url': f"{reverse('conversation_analysis:audio_analysis')}?room_sid={recording.room_sid}",
     })
+
+
+SOLO_MODE_TALK = 'talk'   # お題について自由に話す
+SOLO_MODE_READ = 'read'   # 表示された文を読み上げる（発音チェック向け）
+
+
+@login_required
+@require_http_methods(["GET"])
+def solo_lesson(request):
+    """一人用レッスン: お題（または音読する文）を表示し、ブラウザで録音する"""
+    mode = SOLO_MODE_READ if request.GET.get('mode') == SOLO_MODE_READ else SOLO_MODE_TALK
+    previous = request.GET.get('previous')
+    if mode == SOLO_MODE_READ:
+        prompt = random_sentence(request.user.cefr, exclude=previous)
+    else:
+        prompt = random_topic(request.user.cefr, exclude=previous)
+    return render(request, 'video_chat/solo_lesson.html', {
+        'mode': mode,
+        'prompt': prompt,
+        'cefr': request.user.cefr,
+        'max_seconds': settings.SOLO_MAX_RECORDING_SECONDS,
+        'min_seconds': settings.SOLO_MIN_RECORDING_SECONDS,
+    })
+
+
+@login_required_json
+@require_http_methods(["POST"])
+def solo_upload(request):
+    """一人用レッスンの録音を受け取り、保存して文字起こしする"""
+    uploaded = request.FILES.get('audio')
+    if uploaded is None:
+        return JsonResponse({'error': 'No audio file uploaded'}, status=400)
+    if uploaded.size > settings.SOLO_MAX_UPLOAD_BYTES:
+        return JsonResponse({'error': 'The recording is too large'}, status=400)
+
+    read_aloud = request.POST.get('mode') == SOLO_MODE_READ
+    prompt = request.POST.get('prompt', '').strip()
+    if read_aloud and not prompt:
+        return JsonResponse({'error': 'The sentence to read is missing'}, status=400)
+
+    try:
+        recording = SoloRecordingService().create_recording(
+            user=request.user,
+            uploaded_file=uploaded,
+            topic='' if read_aloud else prompt,
+            reference_text=prompt if read_aloud else '',
+        )
+    except InvalidSoloRecording as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception:
+        logger.exception("Error in solo_upload")
+        return JsonResponse({'error': 'Failed to transcribe the recording'}, status=500)
+
+    player_url = f"{reverse('video_chat:player')}?room_sid={recording.room_sid}"
+    pronunciation_url = f"{reverse('conversation_analysis:audio_analysis')}?room_sid={recording.room_sid}"
+    return JsonResponse({
+        'status': 'success',
+        'recording_id': recording.id,
+        'room_sid': recording.room_sid,
+        'player_url': player_url,
+        # 音読は発音チェックが目的なので、直接その画面へ進む
+        'next_url': pronunciation_url if read_aloud else player_url,
+    })
+
+
+@login_required
+@require_http_methods(["GET"])
+def solo_audio(request, recording_id):
+    """一人用レッスンの録音ファイルを本人にだけ返す"""
+    recording = get_object_or_404(
+        Recording, id=recording_id, user=request.user, lesson_type=Recording.LESSON_TYPE_SOLO,
+    )
+    if not recording.audio_file:
+        raise Http404("Audio not found")
+    try:
+        audio = recording.audio_file.open('rb')
+    except FileNotFoundError:
+        raise Http404("Audio not found")
+    return FileResponse(audio, content_type='audio/wav')
 
 
 @login_required_json

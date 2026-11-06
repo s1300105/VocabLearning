@@ -15,11 +15,17 @@
                 {% for recording in recordings %}
                     <li class="recording-player">
                         <strong>{{ recording.created_at|date:"Y-m-d H:i" }}</strong>
+                        [{{ recording.get_lesson_type_display }}]
                         ({{ recording.duration }}s, {{ recording.get_status_display }})
+                        {% if recording.topic %}<br>Topic: {{ recording.topic }}{% endif %}
+                        {% if recording.reference_text %}<br>Read aloud: {{ recording.reference_text }}{% endif %}
                         <br>
                         <a href="{% url 'video_chat:player' %}?room_sid={{ recording.room_sid|urlencode }}">Play</a>
                         {% if recording.transcript %}
-                            | <a href="{% url 'conversation_analysis:analysis_detail' recording.id %}">Analysis</a>
+                            | <a href="{% url 'conversation_analysis:analysis_detail' recording.id %}">Vocabulary</a>
+                        {% endif %}
+                        {% if recording.pronunciation_text %}
+                            | <a href="{% url 'conversation_analysis:audio_analysis' %}?room_sid={{ recording.room_sid|urlencode }}">Pronunciation</a>
                         {% endif %}
                     </li>
                 {% endfor %}
@@ -27,7 +33,10 @@
         {% else %}
             <p>No recordings yet.</p>
         {% endif %}
-        <p><a href="{% url 'video_chat:video_lesson' %}">Back to video lesson</a></p>
+        <p>
+            <a href="{% url 'video_chat:video_lesson' %}">Room lesson</a>
+            | <a href="{% url 'video_chat:solo_lesson' %}">Solo practice</a>
+        </p>
     </div>
 </body>
 </html>

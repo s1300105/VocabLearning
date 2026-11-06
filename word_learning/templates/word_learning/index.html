@@ -19,6 +19,12 @@
 {% if user.is_authenticated %}
 <div class="h2">Welcome {{user.first_name}} {{user.last_name}}</div>
 <a href="{% url 'favorite_words' %}">Go to Your Word list</a>
+<br>
+<a href="{% url 'video_chat:video_lesson' %}">Room lesson (with a teacher)</a>
+|
+<a href="{% url 'video_chat:solo_lesson' %}">Solo practice</a>
+|
+<a href="{% url 'video_chat:recording_list' %}">My recordings</a>
 <form method="post" action="{% url 'logout' %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">Logout</button>

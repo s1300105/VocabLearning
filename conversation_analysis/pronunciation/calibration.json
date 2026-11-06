@@ -1,0 +1,83 @@
+{
+  "description": "Calibration of pronunciation scores, fitted on speechocean762 (https://huggingface.co/datasets/mispeech/speechocean762, Apache-2.0) with `manage.py evaluate_pronunciation --fit --save`.",
+  "train_utterances": 1250,
+  "test_utterances": 2500,
+  "test_metrics": {
+    "detection_precision": 0.45,
+    "detection_recall": 0.4,
+    "phone_pcc": 0.521,
+    "word_pcc": 0.514,
+    "sentence_pcc": 0.62,
+    "sentence_mae_0_10": 0.91
+  },
+  "phone": {
+    "features": [
+      "bias",
+      "log_target",
+      "gop",
+      "log_peak",
+      "log_evidence",
+      "inserted_vowel",
+      "af_sub",
+      "af_del"
+    ],
+    "weights": [
+      2.966517,
+      0.522708,
+      -0.51042,
+      0.248454,
+      -0.178063,
+      -0.72156,
+      0.04245,
+      0.130673
+    ]
+  },
+  "phone_detection": {
+    "features": [
+      "bias",
+      "log_target",
+      "gop",
+      "log_peak",
+      "log_evidence",
+      "inserted_vowel",
+      "af_sub",
+      "af_del"
+    ],
+    "balance": 3.0,
+    "threshold": 0.46,
+    "weights": [
+      1.841929,
+      0.603521,
+      -0.546844,
+      0.194411,
+      -0.14154,
+      -0.729314,
+      0.045274,
+      0.137402
+    ]
+  },
+  "word": {
+    "features": [
+      "bias",
+      "mean_phone",
+      "min_phone"
+    ],
+    "weights": [
+      0.207885,
+      0.248819,
+      0.565977
+    ]
+  },
+  "sentence": {
+    "features": [
+      "bias",
+      "mean_word",
+      "share_of_low_words"
+    ],
+    "weights": [
+      -0.595815,
+      1.47506,
+      -0.090701
+    ]
+  }
+}

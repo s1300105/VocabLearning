@@ -12,6 +12,15 @@
     {% csrf_token %}
     <div class="recording-player-container">
         <h1>Recordings</h1>
+        {% if topic %}
+            <p class="recording-topic"><strong>Topic:</strong> {{ topic }}</p>
+        {% endif %}
+        {% if reference_text %}
+            <p class="recording-topic"><strong>Read aloud:</strong> {{ reference_text }}</p>
+        {% endif %}
+        {% if pronunciation_url %}
+            <p><a href="{{ pronunciation_url }}">Check my pronunciation</a></p>
+        {% endif %}
 
         {% if error_message %}
             <div class="error-message">
@@ -29,7 +38,7 @@
                 </div>
                 
                 <div class="recording-metadata">
-                    {% if recording_id %}
+                    {% if recording_id and transcript %}
                         <!-- 分析ボタン -->
                         <div class="analyze-container">
                             <button 

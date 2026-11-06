@@ -23,6 +23,14 @@ pandas
 numpy
 scipy
 librosa
+soundfile
+
+# Pronunciation scoring (local phoneme recognition model, no external API)
+# CPU-only PyTorch is enough and much smaller:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch
+transformers
+huggingface_hub
 
 # Local LLM for word_learning (needs the GGUF model file, see LLM_MODEL_PATH)
 llama-cpp-python
