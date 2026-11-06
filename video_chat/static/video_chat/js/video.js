@@ -119,7 +119,9 @@ function log(message) {
     const debugLog = document.getElementById('debug-log');
     if (debugLog) {
         const time = new Date().toISOString();
-        debugLog.innerHTML += `<div>${time}: ${message}</div>`;
+        const entry = document.createElement('div');
+        entry.textContent = `${time}: ${message}`;
+        debugLog.appendChild(entry);
         debugLog.scrollTop = debugLog.scrollHeight;
     }
 }
@@ -207,7 +209,8 @@ async function leaveRoom() {
         
         if (data.status === "success") {
             // room_sidを含めてプレーヤーページにリダイレクト
-            window.location.href = `/video_chat/player/?room_sid=${roomSid}&transcript=${transcript}`;
+            // 文字起こしはサーバー側で保存済みなので URL には載せない
+            window.location.href = `/video_chat/player/?room_sid=${encodeURIComponent(roomSid)}`;
         } else {
             log(`Error: ${data.error || 'Unknown error'}`);
             showError('Failed to process recording');
@@ -347,8 +350,8 @@ async function leaveRoom2() {
                     hideLoading();
                     log('Recording and transcription successful');
                     if (data.transcript) {
-                        const encodedTranscript = encodeURIComponent(data.transcript);
-                        window.location.href = `/video_chat/player/?room_sid=${roomSid}&transcript=${encodedTranscript}`;
+                        // 文字起こしはサーバー側で保存済みなので URL には載せない
+                        window.location.href = `/video_chat/player/?room_sid=${encodeURIComponent(roomSid)}`;
                     } else {
                         throw new Error('No transcript received');
                     }
@@ -545,19 +548,25 @@ async function handleRecordingComplete(roomSid) {
     }
 }
 
+function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value == null ? '' : String(value);
+    return div.innerHTML;
+}
+
 function displayAnalysis(transcripts) {
     const container = document.getElementById('analysis-container');
     transcripts.forEach(transcript => {
         const div = document.createElement('div');
         div.innerHTML = `
             <h3>Speech Analysis</h3>
-            <p><strong>Transcript:</strong> ${transcript.text}</p>
-            <p><strong>Word Count:</strong> ${transcript.word_count}</p>
-            <p><strong>Sentiment:</strong> ${transcript.sentiment}</p>
+            <p><strong>Transcript:</strong> ${escapeHtml(transcript.text)}</p>
+            <p><strong>Word Count:</strong> ${escapeHtml(transcript.word_count)}</p>
+            <p><strong>Sentiment:</strong> ${escapeHtml(transcript.sentiment)}</p>
             <div class="grammar-errors">
                 <h4>Grammar Issues:</h4>
                 <ul>
-                    ${transcript.grammar_errors.map(error => `<li>${error}</li>`).join('')}
+                    ${(transcript.grammar_errors || []).map(error => `<li>${escapeHtml(error)}</li>`).join('')}
                 </ul>
             </div>
         `;

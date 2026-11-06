@@ -1,21 +1,36 @@
 # conversation_analysis/services.py
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from collections import Counter
-import spacy
-import pandas as pd
-from .models import ConversationAnalysis, WordFrequency, POSDistribution
 import logging
-from .vocab_diversity_analysis import VocabularyDiversityAnalyzer
+from collections import Counter
+from functools import lru_cache
+
+import pandas as pd
+
+from .models import ConversationAnalysis, POSDistribution, WordFrequency
+from .vocab_diversity_analysis import VocabularyDiversityAnalyzer, ensure_nltk_resource
 
 logger = logging.getLogger(__name__)
 
+
+@lru_cache(maxsize=1)
+def get_nlp():
+    """spaCy モデルの読み込みは数秒かかるので、プロセス内で一度だけ行う"""
+    import spacy
+
+    return spacy.load("en_core_web_sm")
+
+
+@lru_cache(maxsize=1)
+def get_stop_words():
+    ensure_nltk_resource('corpora/stopwords', 'stopwords')
+    from nltk.corpus import stopwords
+
+    return frozenset(stopwords.words("english"))
+
+
 class ConversationAnalysisService:
     def __init__(self):
-        nltk.download('stopwords')
-        self.nlp = spacy.load("en_core_web_sm")
-        self.stop_words = set(stopwords.words("english"))
+        self.nlp = get_nlp()
+        self.stop_words = get_stop_words()
 
     def analyze_recording(self, recording):
       """録音の文字起こしを分析"""
@@ -72,24 +87,25 @@ class ConversationAnalysisService:
             if token.is_alpha and token.text.lower() not in self.stop_words
         ])
 
-        # 品詞別に単語をカウント
+        # 品詞別に単語をカウント（記号などアルファベット以外のトークンは除外）
         pos_counts = {}
+        first_token = {}  # 単語ごとに最初に出現したトークン（品詞・原形の代表）
         for token in doc:
-            if token.pos_ not in pos_counts:
-                pos_counts[token.pos_] = Counter()
-            if token.is_alpha:
-                pos_counts[token.pos_][token.text.lower()] += 1
-        
-        diversity_analyzer = VocabularyDiversityAnalyzer()
-        diversity = diversity_analyzer.analyze_text(text)
+            if not token.is_alpha:
+                continue
+            word = token.text.lower()
+            pos_counts.setdefault(token.pos_, Counter())[word] += 1
+            first_token.setdefault(word, token)
 
-        # 単語情報のDataFrame作成
+        diversity = VocabularyDiversityAnalyzer().analyze_text(text)
+
+        # 単語情報の DataFrame 作成（以前は単語ごとに doc 全体を走査していた）
         word_df = pd.DataFrame([
             {
                 'word': word,
                 'count': count,
-                'pos': [token.pos_ for token in doc if token.text.lower() == word][0],
-                'lemma': [token.lemma_ for token in doc if token.text.lower() == word][0]
+                'pos': first_token[word].pos_,
+                'lemma': first_token[word].lemma_,
             }
             for word, count in word_counts.most_common()
         ])

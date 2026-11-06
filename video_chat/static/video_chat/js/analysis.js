@@ -112,10 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const element = document.createElement('div');
             element.className = 'conversation-item';
             
-            element.innerHTML = `
-                <div class="speaker-label">${item.speaker}:</div>
-                <div class="speech-content">${item.text}</div>
-            `;
+            const speaker = document.createElement('div');
+            speaker.className = 'speaker-label';
+            speaker.textContent = `${item.speaker}:`;
+            const content = document.createElement('div');
+            content.className = 'speech-content';
+            content.textContent = item.text;
+            element.append(speaker, content);
             
             timeline.appendChild(element);
         });

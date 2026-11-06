@@ -40,7 +40,10 @@ class CompositionStatusChecker {
     showError(message) {
         const processingMessage = document.querySelector('.processing-message');
         if (processingMessage) {
-            processingMessage.innerHTML = `<p class="error">${message}</p>`;
+            const p = document.createElement('p');
+            p.className = 'error';
+            p.textContent = message;
+            processingMessage.replaceChildren(p);
         }
     }
 }

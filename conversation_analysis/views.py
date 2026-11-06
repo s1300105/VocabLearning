@@ -1,223 +1,187 @@
 # conversation_analysis/views.py
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
-from .services import ConversationAnalysisService
-from .models import ConversationAnalysis, WordFrequency, POSDistribution
-from video_chat.models import Recording
 import logging
-from .synonym_service import SynonymSuggestionService
-from .service_audio import PronunciationAnalysisSystem
-from django.views.decorators.csrf import csrf_exempt
-import os
-from django.conf import settings
+from collections import defaultdict
 from pathlib import Path
 
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_POST
+
+from video_chat.decorators import login_required_json
+from video_chat.models import Recording
+
+from .models import ConversationAnalysis, WordFrequency
+from .services import ConversationAnalysisService
+from .synonym_service import SynonymSuggestionService
 
 logger = logging.getLogger(__name__)
 
+# get_audio_file で配信してよいファイル名（このセッションで生成したもの）
+AUDIO_FILES_SESSION_KEY = 'pronunciation_audio_files'
 
-openai_api_key = settings.OPENAI_API_KEY
+
+def _get_user_recording(request, room_sid):
+    """ログインユーザー自身の録音だけを返す（他人の room_sid なら 404）"""
+    if not room_sid:
+        raise Http404("Recording not found")
+    recording = Recording.objects.filter(room_sid=room_sid, user=request.user).first()
+    if recording is None or not recording.transcript:
+        raise Http404("Recording not found")
+    return recording
+
+
+def _allow_audio_files(request, *paths):
+    allowed = set(request.session.get(AUDIO_FILES_SESSION_KEY, []))
+    allowed.update(Path(p).name for p in paths if p)
+    request.session[AUDIO_FILES_SESSION_KEY] = sorted(allowed)
 
 
 @login_required
 def analysis_detail(request, recording_id):
     """会話分析の詳細を表示"""
     recording = get_object_or_404(Recording, id=recording_id, user=request.user)
-    
+
     try:
-        # 分析サービスのインスタンスを作成
-        analysis_service = ConversationAnalysisService()
-       
-        
-        try:
-            # 既存の分析を取得
-            analysis = ConversationAnalysis.objects.get(recording=recording)
-            if not analysis.is_completed:
-                # 完了していない分析は再実行
-                analysis = analysis_service.analyze_recording(recording)
-        except ConversationAnalysis.DoesNotExist:
-            # 分析が存在しない場合は新規作成
-            logger.info(f"Creating new analysis for recording {recording_id}")
-            analysis = analysis_service.analyze_recording(recording)
-        
+        analysis = ConversationAnalysis.objects.filter(recording=recording, is_completed=True).first()
+        if analysis is None:
+            logger.info(f"Creating analysis for recording {recording_id}")
+            analysis = ConversationAnalysisService().analyze_recording(recording)
 
-        
+        word_frequencies = WordFrequency.objects.filter(analysis=analysis)
+        all_words = list(word_frequencies.order_by('-count').values_list('word', 'count', 'pos_tag'))
 
-        # データの準備
-        freq_dict = dict(WordFrequency.objects.filter(
-            analysis=analysis
-        ).order_by('-count')[:5].values_list('word', 'count'))
-        
-        count_word = []
-        for pos in set(WordFrequency.objects.filter(
-            analysis=analysis
-        ).values_list('pos_tag', flat=True)):
-            words = WordFrequency.objects.filter(
-                analysis=analysis,
-                pos_tag=pos
-            ).order_by('-count')
-            count_word.append((pos, dict(words.values_list('word', 'count'))))
+        top5_ranking = [(word, count) for word, count, _ in all_words[:5]]
 
-        top5_ranking = WordFrequency.objects.filter(
-            analysis=analysis
-        ).order_by('-count')[:5].values_list('word', 'count')
-
-        ranking_by_pos = []
-        for pos in set(WordFrequency.objects.filter(
-            analysis=analysis
-        ).values_list('pos_tag', flat=True)):
-            pos_words = WordFrequency.objects.filter(
-                analysis=analysis,
-                pos_tag=pos
-            ).order_by('-count')[:3]
-            if pos_words:
-                ranking_by_pos.append((pos, pos_words.values_list('word', 'count')))
-
-        mltd_score = analysis.mltd_score
-
-        room_sid = recording.room_sid
-        transcript = recording.transcript
+        words_by_pos = defaultdict(list)
+        for word, count, pos in all_words:
+            words_by_pos[pos].append((word, count))
 
         context = {
-            
-            'room_sid':room_sid,
-            'transcript':transcript,
+            'room_sid': recording.room_sid,
+            'transcript': recording.transcript,
             'analysis': analysis,
-            'freq_dict': freq_dict,
-            'count_word': count_word,
+            'freq_dict': dict(top5_ranking),
+            'count_word': [(pos, dict(words)) for pos, words in words_by_pos.items()],
             'top5_ranking': top5_ranking,
-            'ranking_by_pos': ranking_by_pos,
-            'mltd_score':mltd_score,
+            'ranking_by_pos': [(pos, words[:3]) for pos, words in words_by_pos.items()],
+            'mltd_score': analysis.mltd_score,
+            'synonym_suggestions': SynonymSuggestionService().get_suggestions_for_ranking(word_frequencies),
         }
-
-        synonym_service = SynonymSuggestionService()
-
-        synonym_suggestions = synonym_service.get_suggestions_for_ranking(
-            WordFrequency.objects.filter(analysis=analysis)
-        )
-
-        context['synonym_suggestions'] = synonym_suggestions
-
-
-        
         return render(request, 'conversation_analysis/analysis.html', context)
-        
-    except Exception as e:
-        logger.error(f"Error in analysis_detail: {str(e)}")
-        logger.exception("Full traceback:")  # 詳細なエラー情報をログに記録
-        return JsonResponse({
-            'error': 'Failed to analyze recording',
-            'details': str(e)
-        }, status=500)
-    
+
+    except Exception:
+        logger.exception("Error in analysis_detail")
+        return JsonResponse({'error': 'Failed to analyze recording'}, status=500)
+
+
+@login_required
 def audio_analysis(request):
-    room_sid = request.GET.get('room_sid')  
-    transcript = request.GET.get('transcript')
+    recording = _get_user_recording(request, request.GET.get('room_sid'))
     return render(request, 'conversation_analysis/audio_analysis.html', {
-        'room_sid': room_sid,
-        'transcript': transcript
+        'room_sid': recording.room_sid,
+        'transcript': recording.transcript,
     })
 
-@csrf_exempt
+
+def _pronunciation_system():
+    from .service_audio import PronunciationAnalysisSystem  # librosa などの重い依存を遅延読み込み
+
+    return PronunciationAnalysisSystem(settings.OPENAI_API_KEY)
+
+
+@login_required_json
+@require_POST
 def generate_audio(request):
-    if request.method == 'POST':
-        room_sid = request.POST.get('room_sid')
-        transcript = request.POST.get('transcript')
-        try:
-            system = PronunciationAnalysisSystem(openai_api_key)
-            audio_path = system.generate_reference_audio(transcript)
-            audio_path_recorded = system.get_room_recording(room_sid)
-
-            return JsonResponse({
-                'audio_path': audio_path,
-                'audio_path_recorded': audio_path_recorded
-            })
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
-
-def get_audio_file(request, filename):
-    file_path = os.path.join('temp_audio', filename)
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as f:
-            response = HttpResponse(f.read(), content_type='audio/wav')
-            return response
-    return HttpResponse(status=404)
-
-
-@csrf_exempt
-def analyze_pronunciation(request):
-    if request.method == 'POST':
-        room_sid = request.POST.get('room_sid')
-        transcript = request.POST.get('transcript')
-        try:
-            logger.info(f"Starting pronunciation analysis for room {room_sid}")
-            system = PronunciationAnalysisSystem(openai_api_key)
-            
-            result = system.analyze_pronunciation(room_sid, transcript)
-            
-            # 音声ファイルのパスを保存
-            response_data = {
-                'score': float(result['score']),
-                'total_words': len(result['word_comparisons']),
-                'word_comparisons': [],
-                'audio_paths': result['audio_paths']  # 追加
-            }
-            
-            for comp in result['word_comparisons']:
-                word_data = {
-                    'word': comp['word'],
-                    'difference_score': float(comp['difference_score']),
-                    'start_time': float(comp['start_time']),
-                    'end_time': float(comp['end_time']),
-                    'duration_difference': float(comp['duration_difference'])
-                }
-                response_data['word_comparisons'].append(word_data)
-            
-            response_data['word_comparisons'].sort(key=lambda x: x['difference_score'], reverse=True)
-            return JsonResponse(response_data)
-            
-        except Exception as e:
-            logger.error(f"Error in analyze_pronunciation: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
-
-
-def get_audio_file(request, filename):
     try:
-        file_path = os.path.join(settings.BASE_DIR, 'temp_audio', filename)
-        if os.path.exists(file_path):
-            with open(file_path, 'rb') as f:
-                response = HttpResponse(f.read(), content_type='audio/wav')
-                return response
-    except Exception as e:
-        logger.error(f"Error serving audio file: {e}")
-    return HttpResponse(status=404)
+        recording = _get_user_recording(request, request.POST.get('room_sid'))
+    except Http404:
+        return JsonResponse({'error': 'Recording not found'}, status=404)
 
+    try:
+        system = _pronunciation_system()
+        audio_path = system.generate_reference_audio(recording.transcript)
+        audio_path_recorded = system.get_room_recording(recording.room_sid)
+    except Exception:
+        logger.exception("Error in generate_audio")
+        return JsonResponse({'error': 'Failed to prepare audio'}, status=500)
+
+    _allow_audio_files(request, audio_path, audio_path_recorded)
+    return JsonResponse({
+        'audio_path': Path(audio_path).name,
+        'audio_path_recorded': Path(audio_path_recorded).name,
+    })
+
+
+@login_required_json
+@require_POST
+def analyze_pronunciation(request):
+    try:
+        recording = _get_user_recording(request, request.POST.get('room_sid'))
+    except Http404:
+        return JsonResponse({'error': 'Recording not found'}, status=404)
+
+    try:
+        logger.info(f"Starting pronunciation analysis for room {recording.room_sid}")
+        result = _pronunciation_system().analyze_pronunciation(recording.room_sid, recording.transcript)
+    except Exception:
+        logger.exception("Error in analyze_pronunciation")
+        return JsonResponse({'error': 'Failed to analyze pronunciation'}, status=500)
+
+    word_comparisons = [
+        {
+            'word': comp['word'],
+            'difference_score': float(comp['difference_score']),
+            'similarity': float(comp['similarity']),
+            'start_time': float(comp['start_time']),
+            'end_time': float(comp['end_time']),
+            'duration_difference': float(comp['duration_difference']),
+        }
+        for comp in result['word_comparisons']
+    ]
+    word_comparisons.sort(key=lambda x: x['difference_score'], reverse=True)
+
+    audio_paths = result['audio_paths']
+    _allow_audio_files(request, *audio_paths.values())
+
+    return JsonResponse({
+        'score': float(result['score']),
+        'total_words': len(word_comparisons),
+        'word_comparisons': word_comparisons,
+        'sentence_boundaries': result['sentence_boundaries'],
+        'audio_paths': {key: Path(path).name for key, path in audio_paths.items()},
+    })
+
+
+@login_required
+def get_audio_file(request, filename):
+    # このセッションで生成したファイル名のみ許可（パストラバーサル・他人の録音の取得を防ぐ）
+    if filename != Path(filename).name or filename not in request.session.get(AUDIO_FILES_SESSION_KEY, []):
+        raise Http404("Audio not found")
+
+    file_path = Path(settings.TEMP_AUDIO_DIR) / filename
+    if not file_path.is_file():
+        raise Http404("Audio not found")
+    return FileResponse(open(file_path, 'rb'), content_type='audio/wav')
 
 
 def calculate_speaking_rate(word_comparisons):
     """単語/分の発話速度を計算"""
     if not word_comparisons:
         return 0
-    
+
     total_duration = calculate_total_duration(word_comparisons)
-    word_count = len(word_comparisons)
-    
-    # 分あたりの単語数を計算
     if total_duration > 0:
-        return round((word_count / total_duration) * 60, 1)
+        return round((len(word_comparisons) / total_duration) * 60, 1)
     return 0
+
 
 def calculate_total_duration(word_comparisons):
     """総発話時間を計算（秒）"""
     if not word_comparisons:
         return 0
-    
+
     last_word = max(word_comparisons, key=lambda x: x['end_time'])
     first_word = min(word_comparisons, key=lambda x: x['start_time'])
-    
     return round(last_word['end_time'] - first_word['start_time'], 1)

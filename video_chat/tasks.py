@@ -28,10 +28,7 @@ def process_recording(self, recording_id):
         logger.error(f"Recording {recording_id} not found")
     except Exception as e:
         logger.error(f"Error processing recording {recording_id}: {e}")
-        try:
-            recording.mark_as_failed(str(e))
-        except:
-            pass
+        Recording.objects.filter(id=recording_id).update(status='failed', error_message=str(e))
         # リトライ回数が残っている場合は再試行
         raise self.retry(exc=e, countdown=60)  # 1分後に再試行
 
@@ -60,5 +57,5 @@ def analyze_recording(self, recording_id):
         logger.error(f"Recording {recording_id} not found")
     except Exception as e:
         logger.error(f"Error analyzing recording {recording_id}: {e}")
-        recording.mark_as_failed(str(e))
+        Recording.objects.filter(id=recording_id).update(status='failed', error_message=str(e))
         raise

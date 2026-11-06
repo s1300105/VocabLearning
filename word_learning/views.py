@@ -1,42 +1,56 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import EngWord, ExampleSentence, WrittingQuiz, WrittingAnswer, Favorite
-from .forms import UploadEngWord, ReviseDetail, WrittingForm, SignUpForm, LoginForm
-from .llm_config import get_llm, example_sentence, writingquiz_llm, get_llm_writting, getllm_eval_wr, llm_eval_wr
-from random import sample, choice
-from django.core.paginator import Paginator
-from django.core.exceptions import ValidationError
-from django.contrib import messages
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
-from django.urls import reverse_lazy
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+import logging
 import re
+from random import choice, sample
+
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView as BaseLoginView
+from django.contrib.auth.views import LogoutView as BaseLogoutView
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
+
+from .forms import LoginForm, ReviseDetail, SignUpForm, WrittingForm
+from .llm_config import (example_sentence, get_llm, get_llm_writting,
+                         getllm_eval_wr, llm_eval_wr, writingquiz_llm)
+from .models import (MAX_UNSCORED_ANSWERS, EngWord, ExampleSentence, Favorite,
+                     WrittingAnswer, WrittingQuiz)
+
+logger = logging.getLogger(__name__)
+
+QUIZ_CHOICES = 4  # 単語クイズの選択肢の数
+
 
 def index(request):
     return render(request, "word_learning/index.html")
 
+
 def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
-        if form.is_valid():  # フォームのバリデーションチェックを追加
-            user = form.save()  # フォームからユーザーを保存
-            email = form.cleaned_data.get('email')
-            password = form.cleaned_data.get('password1')
-            # 新しく作成したユーザーで認証
-            user = authenticate(request, username=email, password=password)
+        if form.is_valid():
+            form.save()
+            user = authenticate(
+                request,
+                username=form.cleaned_data.get('email'),
+                password=form.cleaned_data.get('password1'),
+            )
             if user is not None:
                 login(request, user)
                 return redirect("index")
-            else:
-                print("Authentication failed")
+            logger.warning("Authentication failed right after signup")
     else:
         form = SignUpForm()
     return render(request, "word_learning/signup.html", {"form": form})
 
+
 class LoginView(BaseLoginView):
     form_class = LoginForm
     template_name = "word_learning/login.html"
+
 
 class LogoutView(BaseLogoutView):
     success_url = reverse_lazy("index")
@@ -45,232 +59,207 @@ class LogoutView(BaseLogoutView):
 @login_required
 def favorite_words(request):
     words = EngWord.objects.filter(favorite__user=request.user)
-    context = {
-        'words':words
-    }
-    return render(request, "word_learning/favorite_word.html", context)
+    return render(request, "word_learning/favorite_word.html", {'words': words})
 
 
+@login_required
+@require_POST
+def remove_favorite(request, word_id):
+    """お気に入りから外す（単語そのものは辞書に残す）"""
+    Favorite.objects.filter(user=request.user, word_id=word_id).delete()
+    return redirect("favorite_words")
 
 
+@login_required
 def word_detail(request, pk):
-
-    request.session['word_id'] = pk
     word_obj = get_object_or_404(EngWord, id=pk)
-    input_word = word_obj.eng_word
-    meaning = word_obj.meaning
-    part_of_speech = word_obj.part_of_speech
-    synonym_objs = word_obj.synonyms.all()
-    synonym = [synonym.eng_word for synonym in synonym_objs ]
-    antonym_objs = word_obj.antonyms.all()
-    antonym = [antonym.eng_word for antonym in antonym_objs]
-    cefr = word_obj.cefr
-
-    
 
     if request.method == "POST" and "generate_sentence" in request.POST:
         llm = get_llm()
-        sentence = example_sentence(input_word, llm)
-        instance = ExampleSentence(
-            sentence=sentence,
-            eng_word=get_object_or_404(EngWord, id=pk)
+        sentence = example_sentence(word_obj.eng_word, llm)
+        max_length = ExampleSentence._meta.get_field('sentence').max_length
+        ExampleSentence.objects.create(
+            user=request.user,
+            eng_word=word_obj,
+            sentence=sentence[:max_length],
         )
-        instance.save()
-  
-    all_sentences = ExampleSentence.objects.filter(eng_word__eng_word=input_word)
+        # 再読み込みで二重生成しないようにリダイレクトする
+        return redirect("word_detail", pk=pk)
+
     context = {
-        'input_word':input_word,
-        'all_sentences':all_sentences,
-        'word_id':pk,
-        'part_of_speech':part_of_speech,
-        'synonyms':synonym,
-        'antonyms':antonym,
-        'meaning':meaning,
-        'cefr':cefr,
+        'input_word': word_obj.eng_word,
+        'all_sentences': ExampleSentence.objects.filter(eng_word=word_obj, user=request.user),
+        'word_id': pk,
+        'part_of_speech': word_obj.part_of_speech,
+        'synonyms': [w.eng_word for w in word_obj.synonyms.all()],
+        'antonyms': [w.eng_word for w in word_obj.antonyms.all()],
+        'meaning': word_obj.meaning,
+        'cefr': word_obj.cefr,
     }
-
-
-    
     return render(request, "word_learning/word_detail.html", context)
+
+
 @login_required
 def word_quiz(request):
-    word_ids = list(EngWord.objects.filter(cefr = request.user.cefr).values_list('id', flat=True))
+    if not request.user.cefr:
+        messages.error(request, "Please set your CEFR level before taking the word quiz.")
+        return redirect("index")
+
+    word_ids = list(EngWord.objects.filter(cefr=request.user.cefr).values_list('id', flat=True))
+    if len(word_ids) < QUIZ_CHOICES:
+        messages.error(request, f"Not enough words registered for level {request.user.cefr}.")
+        return redirect("index")
 
     answer_id = choice(word_ids)
     answer_word = EngWord.objects.get(id=answer_id)
-    answer_japa = answer_word.meaning
     request.session['answer_id'] = answer_id
     request.session['answer'] = answer_word.eng_word
     request.session['answer_meaning'] = answer_word.meaning
 
-    remaining_ids = [id for id in word_ids if id != answer_id]
-    other_ids = sample(remaining_ids, 3)
-    other_words = []
-    for other_id in other_ids:
-        other_word = EngWord.objects.get(id=other_id).eng_word
-        other_words.append(other_word)
-
-    all_words = [answer_word] + other_words
+    other_ids = sample([i for i in word_ids if i != answer_id], QUIZ_CHOICES - 1)
+    other_words = list(EngWord.objects.filter(id__in=other_ids).values_list('eng_word', flat=True))
+    all_words = [answer_word.eng_word] + other_words
     shuffled_words = sample(all_words, len(all_words))
 
-    return render(request, "word_learning/word_quiz.html", {"answer_japa":answer_japa, "shuffled_words":shuffled_words})
+    return render(request, "word_learning/word_quiz.html", {
+        "answer_japa": answer_word.meaning,
+        "shuffled_words": shuffled_words,
+    })
 
 
-
+@login_required
 def result(request):
-    if request.method == "POST":
-        
-        selected_word = request.POST.get('word_choice')
-        answer = request.session['answer']
-        meaning = request.session['answer_meaning']
-        answer_id = request.session['answer_id']
-        if selected_word == answer:   
-            result = "Your answer is correct!!! (" + answer + " => " + meaning + ")"
-        else:
-            result = "No, Your answer is incorrect (" + answer + " => " + meaning + ")"
-        return render(request, "word_learning/result.html", {"result":result, "answer":answer, "answer_id":answer_id})
+    answer = request.session.get('answer')
+    if request.method != "POST" or answer is None:
+        return redirect("word_quiz")
 
-def delete_word(request, word_id):
-    if request.method == "POST" and "delete_word" in request.POST:
-        word = EngWord.objects.get(id=word_id)
-        word.delete()
-        return redirect("home")
+    meaning = request.session.get('answer_meaning') or ''
+    answer_id = request.session.get('answer_id')
+    selected_word = request.POST.get('word_choice')
+    if selected_word == answer:
+        result_text = f"Your answer is correct!!! ({answer} => {meaning})"
+    else:
+        result_text = f"No, Your answer is incorrect ({answer} => {meaning})"
+    return render(request, "word_learning/result.html", {
+        "result": result_text,
+        "answer": answer,
+        "answer_id": answer_id,
+    })
 
 
+@login_required
+@require_POST
 def delete_sentence(request, sentence_id):
-    word_id = request.session['word_id']
-    if request.method == "POST" and "delete" in request.POST:
-        sentence = ExampleSentence.objects.get(id=sentence_id)
-        sentence.delete()
-        return redirect("word_detail", pk=word_id)
+    sentence = get_object_or_404(ExampleSentence, id=sentence_id, user=request.user)
+    word_id = sentence.eng_word_id
+    sentence.delete()
+    return redirect("word_detail", pk=word_id)
 
 
-
-
-def revise_detail(request):
-    word_id = request.session['word_id']
+@login_required
+def revise_detail(request, pk):
+    word = get_object_or_404(EngWord, id=pk)
     if request.method == "POST":
-        form_detail = ReviseDetail(request.POST)
+        form_detail = ReviseDetail(request.POST, instance=word)
         if form_detail.is_valid():
             form_detail.save()
-            return redirect("word_detail", pk=word_id)
+            return redirect("word_detail", pk=pk)
     else:
-        form_detail = ReviseDetail()
+        form_detail = ReviseDetail(instance=word)
 
-    return render(request, "word_learning/revise_detail.html", {"form_detail":form_detail})
+    return render(request, "word_learning/revise_detail.html", {"form_detail": form_detail, "word": word})
 
 
+@login_required
 def writting_quiz(request):
-
     if request.method == "POST" and "writting_quiz" in request.POST:
         llm = get_llm_writting()
         quiz = writingquiz_llm(llm)
-        instance = WrittingQuiz(
-            user=request.user,
-            quiz = quiz,
-            llm_quiz = True
-        )
-        instance.save()
-    
+        WrittingQuiz.objects.create(user=request.user, quiz=quiz, llm_quiz=True)
+        return redirect("writting_quiz")
+
     all_quiz = WrittingQuiz.objects.filter(user=request.user).order_by('-created_at')
     paginator = Paginator(all_quiz, 10)
-    page_number = request.GET.get('page', 1)
-    quiz_page = paginator.get_page(page_number)
+    quiz_page = paginator.get_page(request.GET.get('page', 1))
 
-    context = {"all_quiz":all_quiz,
-               
-               "quiz_page":quiz_page}
-
-    return render(request, "word_learning/writting_quiz.html", context)
+    return render(request, "word_learning/writting_quiz.html", {"all_quiz": all_quiz, "quiz_page": quiz_page})
 
 
+def _unscored_answers(user):
+    return WrittingAnswer.objects.filter(user=user, scored=False)
+
+
+@login_required
 def wr_quiz_page(request, quiz_id):
-    prog_answer = WrittingAnswer.objects.filter(scored=False).count()
-    if prog_answer > 3:
-        messages.error(request, "There are already 6 or more unscored WrittingAnswer instances. Please score your answers first.")
+    if _unscored_answers(request.user).count() >= MAX_UNSCORED_ANSWERS:
+        messages.error(
+            request,
+            f"You already have {MAX_UNSCORED_ANSWERS} or more unscored answers. Please score your answers first.",
+        )
         return redirect('error_writting')
-    quiz = WrittingQuiz.objects.get(id=quiz_id)
-    
+
+    quiz = get_object_or_404(WrittingQuiz, id=quiz_id, user=request.user)
+
     if request.method == 'POST':
         form = WrittingForm(request.POST)
         if form.is_valid():
+            answer = form.save(commit=False)
+            answer.user = request.user
+            answer.quiz = quiz
             try:
-                answer = form.save(commit=False)
-                answer.quiz = quiz
                 answer.save()
-                return redirect('writting_fin')
             except ValidationError as e:
-                messages.error(request, "The number of non scored files are more than limit. Please score your writting quizzes answer")
-                return redirect('error_page')
-        
+                messages.error(request, e.messages[0])
+                return redirect('error_writting')
+            return redirect('writting_fin')
     else:
         form = WrittingForm()
-    
-    context = {"quiz":quiz, "form":form}
-    
 
-    return render(request, "word_learning/wr_quiz_page.html", context)
+    return render(request, "word_learning/wr_quiz_page.html", {"quiz": quiz, "form": form})
 
+
+@login_required
 def writting_fin(request):
-    prog_answers = WrittingAnswer.objects.filter(scored=False).order_by("created_at")
-    context = {'prog_answers':prog_answers}
-    
-    return render(request, "word_learning/writting_fin.html", context)
+    prog_answers = _unscored_answers(request.user).select_related('quiz').order_by("created_at")
+    return render(request, "word_learning/writting_fin.html", {'prog_answers': prog_answers})
 
+
+@login_required
 def score_wr_quiz(request):
-    # スコアがまだついていない回答を取得
-    prog_answers = WrittingAnswer.objects.filter(scored=False).order_by("created_at")
-    
-    llm = getllm_eval_wr()  # LLM モデルを取得
-    
-    output = []
-    quiz = []
-    answer = []
-    
-    for answer_obj in prog_answers:
-        answer_text = answer_obj.answer  # `answer` 文字列を取得
-        quiz_text = answer_obj.quiz.quiz  # `quiz` の質問文を取得
+    """未採点の回答を LLM で採点する"""
+    prog_answers = list(_unscored_answers(request.user).select_related('quiz').order_by("created_at"))
 
-        answer.append(answer_text)
-        quiz.append(quiz_text)
-        
-        # 評価するためのコンテンツを作成
-        content = f"<Question>: {quiz_text} <Answer>: {answer_text}"
-        text = llm_eval_wr(llm, content)  # LLMで回答を評価
-        
-        # 正規表現でスコアを抽出
-        score_match = re.search(r'score:\s*(\d+)', text)
-        
-        if score_match:
-            score = int(score_match.group(1))  # スコアを整数に変換して取得
-            answer_obj.score = score  # WrittingAnswer の score フィールドにスコアを設定
-            answer_obj.scored = True  # スコアがついたことを記録
-            answer_obj.comment = text
-            answer_obj.save()  # 変更をデータベースに保存
-        
-            
-        
-        output.append(text)  # LLM の出力をリストに追加
-    quiz_ans_comment = zip(quiz, answer, output)
-    context = {
-        "quiz_ans_comment":quiz_ans_comment
-    }
-    
-    return render(request, "word_learning/score_wr_quiz.html", context)
+    results = []
+    if prog_answers:
+        llm = getllm_eval_wr()
+        for answer_obj in prog_answers:
+            content = f"<Question>: {answer_obj.quiz.quiz} <Answer>: {answer_obj.answer}"
+            text = llm_eval_wr(llm, content)
+
+            score_match = re.search(r'score:\s*(\d+)', text, re.IGNORECASE)
+            if score_match:
+                answer_obj.score = min(int(score_match.group(1)), 100)
+                answer_obj.scored = True
+                answer_obj.comment = text
+                answer_obj.save()
+
+            results.append((answer_obj.quiz.quiz, answer_obj.answer, text))
+
+    return render(request, "word_learning/score_wr_quiz.html", {"quiz_ans_comment": results})
 
 
-
-    
-
+@login_required
 def error_writting(request):
     return render(request, "word_learning/error_writting.html")
 
+
+@login_required
 def makesure_score(request):
     return render(request, "word_learning/makesure_score.html")
 
+
+@login_required
 def answer_history(request, quiz_id):
-    answers = WrittingAnswer.objects.filter(quiz = quiz_id)
-    context = {
-        'answers':answers
-    }
-    return render(request, "word_learning/answer_history.html", context)
+    quiz = get_object_or_404(WrittingQuiz, id=quiz_id, user=request.user)
+    answers = WrittingAnswer.objects.filter(quiz=quiz, user=request.user).order_by('-created_at')
+    return render(request, "word_learning/answer_history.html", {'answers': answers})

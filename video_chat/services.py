@@ -12,9 +12,16 @@ logger = logging.getLogger(__name__)
 
 class AudioTranscriptionService:
     def __init__(self):
-        self.openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self._openai_client = None
         self.recordings_dir = os.path.join(settings.MEDIA_ROOT, 'recordings')
         os.makedirs(self.recordings_dir, exist_ok=True)
+
+    @property
+    def openai_client(self):
+        # 状態確認など OpenAI を使わない処理では API キーを要求しないよう、必要になってから作る
+        if self._openai_client is None:
+            self._openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        return self._openai_client
 
     def transcribe_audio(self, audio_url):
         """音声ファイルの文字起こしを行う"""
@@ -39,7 +46,7 @@ class AudioTranscriptionService:
 
     def _download_audio(self, audio_url, save_path):
         """音声ファイルをダウンロード"""
-        response = requests.get(audio_url, stream=True)
+        response = requests.get(audio_url, stream=True, timeout=60)
         response.raise_for_status()
         
         with open(save_path, 'wb') as f:
@@ -123,10 +130,10 @@ class RecordingService:
             logger.error(f"Error handling new recording: {e}")
             raise
 
-    def get_recording_status(self, recording_id):
-        """録音の状態を取得"""
+    def get_recording_status(self, recording_id, user):
+        """録音の状態を取得（他のユーザーの録音は見つからない扱いにする）"""
         try:
-            recording = Recording.objects.get(id=recording_id)
+            recording = Recording.objects.get(id=recording_id, user=user)
             return {
                 'status': recording.status,
                 'transcript': recording.transcript if recording.transcript else None,

@@ -1,8 +1,10 @@
 # conversation_analysis/synonym_service.py
-from nltk.corpus import wordnet
-from collections import defaultdict
-import nltk
 import logging
+from collections import defaultdict
+
+from nltk.corpus import wordnet
+
+from .vocab_diversity_analysis import ensure_nltk_resource
 
 logger = logging.getLogger(__name__)
 
@@ -10,10 +12,7 @@ class SynonymSuggestionService:
     """WordNetを使用して類似語を提案するサービス"""
     
     def __init__(self):
-        try:
-            nltk.data.find('corpora/wordnet')
-        except LookupError:
-            nltk.download('wordnet')
+        ensure_nltk_resource('corpora/wordnet', 'wordnet')
     
     def get_synonyms(self, word, pos_tag):
         """
@@ -74,16 +73,14 @@ class SynonymSuggestionService:
                 pos_tag=pos
             ).order_by('-count')[start_rank-1:end_rank]
             
-            # 各単語に対して類似語を取得
-            for word_freq in words:
+            # 各単語に対して類似語を取得（順位はスライスの開始位置から数えればよい）
+            for rank, word_freq in enumerate(words, start=start_rank):
                 synonyms = self.get_synonyms(word_freq.word, pos)
                 if synonyms:
                     suggestions[pos].append({
                         'word': word_freq.word,
                         'count': word_freq.count,
-                        'rank': list(word_frequencies.filter(
-                            pos_tag=pos
-                        ).order_by('-count')).index(word_freq) + 1,
+                        'rank': rank,
                         'synonyms': synonyms
                     })
                     

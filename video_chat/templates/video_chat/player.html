@@ -12,7 +12,6 @@
     {% csrf_token %}
     <div class="recording-player-container">
         <h1>Recordings</h1>
-        {{recording_id}}
 
         {% if error_message %}
             <div class="error-message">
@@ -22,7 +21,7 @@
 
         <div id="recording-players" 
              class="players-list" 
-             data-recordings='{{ recordings_json|safe }}'
+             data-recordings="{{ recordings_json }}"
              data-transcript="{{ transcript|default_if_none:'' }}">
             <div class="recording-player">
                 <div class="player-wrapper">

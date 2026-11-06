@@ -24,13 +24,17 @@ function formatTranscriptText() {
     const transcriptContainer = document.querySelector('.transcript-text');
     if (transcriptContainer) {
         const text = transcriptContainer.textContent;
-        const formattedText = text.split('\n')
+        const lines = text.split('\n')
             .map(line => line.trim())
-            .filter(line => line.length > 0)
-            .map(line => `<p class="transcript-line">${line}</p>`)
-            .join('');
-        
-        transcriptContainer.innerHTML = formattedText;
+            .filter(line => line.length > 0);
+
+        // textContent で入れることで、文字起こし中の "<" などを HTML として解釈させない
+        transcriptContainer.replaceChildren(...lines.map(line => {
+            const p = document.createElement('p');
+            p.className = 'transcript-line';
+            p.textContent = line;
+            return p;
+        }));
     }
 }
 

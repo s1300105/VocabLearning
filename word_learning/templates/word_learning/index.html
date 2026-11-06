@@ -9,6 +9,13 @@
 {% endblock %}
 
 {% block content %}
+{% if messages %}
+<ul class="list-unstyled">
+    {% for message in messages %}
+    <li class="alert alert-warning">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% if user.is_authenticated %}
 <div class="h2">Welcome {{user.first_name}} {{user.last_name}}</div>
 <a href="{% url 'favorite_words' %}">Go to Your Word list</a>
