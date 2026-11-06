@@ -1,4 +1,34 @@
+# Secrets / local config
 .env
-*.gguf
-*.logdb.sqlite3
+
+# Databases and backups
 db.sqlite3
+db.sqlite3-journal
+*.sqlite3.backup
+backup.json
+
+# Logs
+*.log
+logs/
+
+# User-generated / temporary media (contains personal voice data)
+media/
+temp_audio/
+temp_audio.mp3
+
+# collectstatic output
+staticfiles/
+
+# Local LLM models
+*.gguf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
