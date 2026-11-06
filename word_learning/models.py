@@ -1,7 +1,4 @@
 from django.db import models
-from django.apps import apps
-from django.contrib import auth
-from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -11,6 +8,9 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.base_user import BaseUserManager
+
+# 1ユーザーあたり、採点前の英作文回答をいくつまで溜められるか
+MAX_UNSCORED_ANSWERS = 4
 
 class UserManager(BaseUserManager):
     use_in_migrations = True

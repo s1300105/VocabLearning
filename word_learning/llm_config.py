@@ -1,162 +1,95 @@
-from llama_cpp import Llama
-from transformers import pipeline, AutoConfig
-import os, random
-import torch
+"""ローカル LLM (llama.cpp / Phi-3) を使った例文生成・英作文の出題と採点"""
+import logging
+import random
+import threading
+from functools import lru_cache
+from pathlib import Path
+
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+DOCUMENT_DIR = Path(__file__).resolve().parent / 'document'
+WRITING_SAMPLE_PATH = DOCUMENT_DIR / 'writting_sample.txt'
+WRITING_PROMPT_PATH = DOCUMENT_DIR / 'writting_prompt.txt'
+
+# サンプリング設定は Llama() のコンストラクタではなく生成時に渡す必要がある
+CREATIVE_SAMPLING = {'temperature': 1.8, 'top_k': 100, 'top_p': 0.95}
+EVAL_SAMPLING = {'temperature': 0.0, 'top_k': 3, 'top_p': 0.95}
+
+# llama.cpp のモデルはスレッドセーフではないので、生成は直列に行う
+_generate_lock = threading.Lock()
+
+ERROR_MESSAGE = "An error occurred while generating the sentence."
+
+
+@lru_cache(maxsize=2)
+def _load_llm(n_ctx, n_gpu_layers):
+    """モデルの読み込みは重いので、プロセス内で一度だけ行う"""
+    from llama_cpp import Llama  # 重い依存なので使うときだけ import する
+
+    return Llama(
+        model_path=settings.LLM_MODEL_PATH,
+        n_ctx=n_ctx,  # longer sequence lengths require much more resources
+        n_threads=8,
+        n_gpu_layers=n_gpu_layers,
+        verbose=False,
+    )
+
 
 def get_llm():
-    
-    llm = Llama(
-        model_path="/Users/yudi0/Desktop/SelfStudies/heavyfiles/Phi-3-mini-4k-instruct-q4.gguf",  # path to GGUF file
-        n_ctx=1024,  # The max sequence length to use - note that longer sequence lengths require much more resources
-        n_threads=8, # The number of CPU threads to use, tailor to your system and the resulting performance
-        n_gpu_layers=35,
-        tempreture=1.8,
-        top_k=100,
-        top_p=0.95
-    )
-    return llm
+    return _load_llm(n_ctx=1024, n_gpu_layers=35)
+
+
+def get_llm_writting():
+    return _load_llm(n_ctx=1024, n_gpu_layers=35)
+
+
+def getllm_eval_wr():
+    return _load_llm(n_ctx=2048, n_gpu_layers=0)
+
+
+def _generate(llm, prompt, max_tokens, sampling):
+    with _generate_lock:
+        output = llm(
+            f"<|user|>\n{prompt}<|end|>\n<|assistant|>",
+            max_tokens=max_tokens,
+            stop=["<|end|>"],
+            echo=False,
+            **sampling,
+        )
+    return output['choices'][0]['text'].strip()
 
 
 def example_sentence(input_word, llm):
     try:
-        prompt = "Please write a sentence that contains the word " + input_word + "."
-        output = llm(
-            f"<|user|>\n{prompt}<|end|>\n<|assistant|>",
-            max_tokens=32,  
-            stop=["<|end|>"], 
-            echo=True,  # Whether to echo the prompt
-        )
-        full_response = output['choices'][0]['text']
-        assistant_tag = "<|assistant|>"
-        start_index = full_response.find(assistant_tag)
+        prompt = f"Please write a sentence that contains the word {input_word}."
+        return _generate(llm, prompt, max_tokens=32, sampling=CREATIVE_SAMPLING)
+    except Exception:
+        logger.exception("Error generating example sentence")
+        return ERROR_MESSAGE
 
-        if start_index != -1:
-            sentence  = full_response[start_index + len(assistant_tag):].strip()
-        else:
-            sentence = full_response.strip()
-        return sentence
-    
-    except Exception as e:
-        print(f"Error generating sentence: {e}")
-        return "An error occurred while generating the sentence."
-
-def get_llm_writting():
-    
-    llm = Llama(
-        model_path="/Users/yudi0/Desktop/SelfStudies/heavyfiles/Phi-3-mini-4k-instruct-q4.gguf",  # path to GGUF file
-        n_ctx=1024,  # The max sequence length to use - note that longer sequence lengths require much more resources
-        n_threads=8, # The number of CPU threads to use, tailor to your system and the resulting performance
-        n_gpu_layers=35,
-        tempreture=1.8,
-        top_k=100,
-        top_p=0.95
-    )
-    return llm
 
 def writingquiz_llm(llm):
     try:
-
-        prompt = "Generate a single question in the same style as the following examples. Your response should contain only the new question, without any additional explanation or commentary: "
-        with open("/Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/word_learning/document/writting_sample.txt", 'r') as f:
-            all_samples = f.readlines()
-        
-        samples = random.sample(all_samples, 10)
-        samples = ''.join(samples)
-        prompt += samples
-        print(prompt)
-
-        output = llm(
-            f"<|user|>\n{prompt}<|end|>\n<|assistant|>",
-            max_tokens=256,  
-            stop=["<|end|>"], 
-            echo=True,  # Whether to echo the prompt
+        prompt = (
+            "Generate a single question in the same style as the following examples. "
+            "Your response should contain only the new question, without any additional "
+            "explanation or commentary: "
         )
+        all_samples = WRITING_SAMPLE_PATH.read_text(encoding='utf-8').splitlines(keepends=True)
+        samples = random.sample(all_samples, min(10, len(all_samples)))
+        prompt += ''.join(samples)
+        return _generate(llm, prompt, max_tokens=256, sampling=CREATIVE_SAMPLING)
+    except Exception:
+        logger.exception("Error generating writing quiz")
+        return ERROR_MESSAGE
 
-        full_response = output['choices'][0]['text']
-        assistant_tag = "<|assistant|>"
-        start_index = full_response.find(assistant_tag)
-
-        if start_index != -1:
-            sentence  = full_response[start_index + len(assistant_tag):].strip()
-        else:
-            sentence = full_response.strip()
-        return sentence
-    
-    except Exception as e:
-        print(f"Error generating sentence: {e}")
-        return "An error occurred while generating the sentence."
-
-def getllm_eval_wr():
-    llm = Llama(
-        model_path="/Users/yudi0/Desktop/SelfStudies/heavyfiles/Phi-3-mini-4k-instruct-q4.gguf",  # path to GGUF file
-        n_ctx=2048,  # The max sequence length to use - note that longer sequence lengths require much more resources
-        n_threads=8, # The number of CPU threads to use, tailor to your system and the resulting performance
-        n_gpu_layers=0,
-        temperature=0,
-        top_k=3,
-        top_p=0.95,
-        
-    )
-    return llm
 
 def llm_eval_wr(llm, content):
     try:
-        with open("/Users/yudi0/Desktop/SelfStudies/vocab_learn/mysite/word_learning/document/writting_prompt.txt", 'r') as f:
-            all_prompt = f.read()
-
-        prompt = all_prompt + " " + content   
-        
-        print(prompt)
-
-        output = llm(
-            f"<|user|>\n{prompt}<|end|>\n<|assistant|>",
-            max_tokens=256,  
-            stop=["<|end|>"], 
-            echo=True,  # Whether to echo the prompt
-        )
-
-        full_response = output['choices'][0]['text']
-        assistant_tag = "<|assistant|>"
-        start_index = full_response.find(assistant_tag)
-
-        if start_index != -1:
-            sentence  = full_response[start_index + len(assistant_tag):].strip()
-        else:
-            sentence = full_response.strip()
-        return sentence
-    
-    except Exception as e:
-        print(f"Error generating sentence: {e}")
-        return "An error occurred while generating the sentence."
-
-"""
-
-def llm_eval_wr(content):
-    config = AutoConfig.from_pretrained("meta-llama/Llama-3.2-1B-Instruct")
-    
-    messages = [
-        {"role": "user", "content":content}
-    ]
-
-    pipe = pipeline(
-        "text-generation",
-        model="meta-llama/Llama-3.2-1B-Instruct",
-        torch_dtype=torch.float16,
-        device="mps",
-        model_kwargs={"low_cpu_mem_usage": True},
-    )
-    generation_config = {
-        "num_return_sequences": 1,
-        "max_new_tokens": 100j,
-        "do_sample": False,
-        "temperature": 0.1,
-        "top_k": 1,
-        "repetition_penalty": 1.2,
-        "no_repeat_ngram_size": 3,
-    }
-    output = pipe(messages, **generation_config)
-    output = output[0]['generated_txt'][1]['content']
-    print(output)
-    return output
-
-"""
+        prompt = WRITING_PROMPT_PATH.read_text(encoding='utf-8') + " " + content
+        return _generate(llm, prompt, max_tokens=256, sampling=EVAL_SAMPLING)
+    except Exception:
+        logger.exception("Error evaluating writing answer")
+        return ERROR_MESSAGE

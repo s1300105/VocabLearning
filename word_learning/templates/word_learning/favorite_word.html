@@ -12,9 +12,9 @@
     </ul>
     <a href="{% url 'word_detail' word.id %}">detail of this word</a>
     <br>
-    <form method="POST" action="{% url 'delete_word' word.id %}">
+    <form method="POST" action="{% url 'remove_favorite' word.id %}">
         {% csrf_token %}
-        <button type="submit" name="delete_word">Delete</button>
+        <button type="submit">Remove from list</button>
     </form>
 </div>
 <hr>

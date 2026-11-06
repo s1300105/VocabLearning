@@ -1,6 +1,7 @@
 {% extends "word_learning/base.html" %}
 {% block content %}
 
+<h2>{{ word.eng_word }}</h2>
 <div>
     <form method = "POST" action="">
         {% csrf_token %}

@@ -8,14 +8,12 @@ urlpatterns = [
     path("login", views.LoginView.as_view(), name="login"),
     path("logout", views.LogoutView.as_view(), name="logout"),
     path("favorite_words", views.favorite_words, name="favorite_words"),
-  
-    
     path("word_detail/<int:pk>", views.word_detail, name="word_detail"),
     path("word_quiz", views.word_quiz, name="word_quiz"),
     path("result", views.result, name='result'),
-    path("delete_word/<int:word_id>", views.delete_word, name="delete_word"),
+    path("remove_favorite/<int:word_id>", views.remove_favorite, name="remove_favorite"),
     path("delete_sentence/<int:sentence_id>", views.delete_sentence, name="delete_sentence"),
-    path("revise_detail", views.revise_detail, name="revise_detail"),
+    path("revise_detail/<int:pk>", views.revise_detail, name="revise_detail"),
     path("writting_quiz", views.writting_quiz, name="writting_quiz"),
     path("wr_quiz_page/<int:quiz_id>", views.wr_quiz_page, name="wr_quiz_page"),
     path("writting_fin", views.writting_fin, name="writting_fin"),
