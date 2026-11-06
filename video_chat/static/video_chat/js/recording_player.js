@@ -28,6 +28,8 @@ class RecordingPlayer {
             console.log('Audio metadata loaded');
             this.createPlayerUI();
             this.attachEventListeners();
+            // 再生前から全体の長さを表示する（以前は再生を始めるまで 0:00 / 0:00 のままだった）
+            this.updateTimeDisplay();
         });
 
         // エラーハンドリング

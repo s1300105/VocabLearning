@@ -13,6 +13,7 @@ logs/
 
 # User-generated / temporary media (contains personal voice data)
 media/
+private_media/
 temp_audio/
 temp_audio.mp3
 

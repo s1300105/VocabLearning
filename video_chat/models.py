@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from .storage import PrivateMediaStorage
+
 class Recording(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -9,8 +11,21 @@ class Recording(models.Model):
         ('failed', 'Failed')
     ]
     
+    LESSON_TYPE_ROOM = 'room'
+    LESSON_TYPE_SOLO = 'solo'
+    LESSON_TYPE_CHOICES = [
+        (LESSON_TYPE_ROOM, 'Room lesson'),
+        (LESSON_TYPE_SOLO, 'Solo practice'),
+    ]
+    # 一人用レッスンの録音は Twilio のルームがないので、"SOLO" + ランダムな ID を入れる
+    SOLO_ROOM_SID_PREFIX = 'SOLO'
+
+    lesson_type = models.CharField(max_length=10, choices=LESSON_TYPE_CHOICES, default=LESSON_TYPE_ROOM)
     room_sid = models.CharField(max_length=255)
-    audio_url = models.URLField(max_length=500)
+    audio_url = models.URLField(max_length=500, blank=True)  # Twilio の録音 URL（ルームレッスンのみ）
+    # 一人用レッスンの録音（16kHz モノラル WAV）。公開ディレクトリには置かない
+    audio_file = models.FileField(upload_to='solo_recordings/%Y/%m/', storage=PrivateMediaStorage(), blank=True)
+    topic = models.CharField(max_length=300, blank=True)
     duration = models.IntegerField()  # 秒単位
     transcript = models.TextField(null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -30,6 +45,10 @@ class Recording(models.Model):
 
     def __str__(self):
         return f"Recording {self.room_sid} - {self.created_at}"
+
+    @property
+    def is_solo(self):
+        return self.lesson_type == self.LESSON_TYPE_SOLO
 
     def mark_as_failed(self, error_message):
         self.status = 'failed'

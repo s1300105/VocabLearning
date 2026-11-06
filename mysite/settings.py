@@ -160,6 +160,14 @@ STATICFILES_DIRS = [_project_static] if _project_static.is_dir() else []
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# 公開しないファイル（一人用レッスンの録音など）。MEDIA_URL では配信されない
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
+
+# 一人用レッスンの録音の制限
+SOLO_MAX_RECORDING_SECONDS = 300
+SOLO_MIN_RECORDING_SECONDS = 2
+SOLO_MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
 # 発音分析で生成・ダウンロードする一時音声ファイルの置き場所
 TEMP_AUDIO_DIR = BASE_DIR / 'temp_audio'
 

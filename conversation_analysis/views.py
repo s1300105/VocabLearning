@@ -85,6 +85,13 @@ def audio_analysis(request):
     })
 
 
+def _local_audio_path(recording):
+    """一人用レッスンならサーバーに保存した録音のパス、ルームレッスンなら None（Twilio から取得）"""
+    if recording.is_solo and recording.audio_file:
+        return recording.audio_file.path
+    return None
+
+
 def _pronunciation_system():
     from .service_audio import PronunciationAnalysisSystem  # librosa などの重い依存を遅延読み込み
 
@@ -102,7 +109,8 @@ def generate_audio(request):
     try:
         system = _pronunciation_system()
         audio_path = system.generate_reference_audio(recording.transcript)
-        audio_path_recorded = system.get_room_recording(recording.room_sid)
+        audio_path_recorded = system.get_room_recording(
+            recording.room_sid, local_audio_path=_local_audio_path(recording))
     except Exception:
         logger.exception("Error in generate_audio")
         return JsonResponse({'error': 'Failed to prepare audio'}, status=500)
@@ -124,7 +132,8 @@ def analyze_pronunciation(request):
 
     try:
         logger.info(f"Starting pronunciation analysis for room {recording.room_sid}")
-        result = _pronunciation_system().analyze_pronunciation(recording.room_sid, recording.transcript)
+        result = _pronunciation_system().analyze_pronunciation(
+            recording.room_sid, recording.transcript, local_audio_path=_local_audio_path(recording))
     except Exception:
         logger.exception("Error in analyze_pronunciation")
         return JsonResponse({'error': 'Failed to analyze pronunciation'}, status=500)

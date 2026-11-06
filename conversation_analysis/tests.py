@@ -121,3 +121,42 @@ class PronunciationAlignmentTests(TestCase):
         self.assertEqual(PronunciationAnalysisSystem.similarity_from_distance(0), 1.0)
         self.assertAlmostEqual(PronunciationAnalysisSystem.similarity_from_distance(150), 0.85)
         self.assertEqual(PronunciationAnalysisSystem.similarity_from_distance(10_000), 0.0)
+
+
+class SoloPronunciationTests(TestCase):
+    """一人用レッスンの録音は Twilio ではなく保存済みのファイルを使う"""
+
+    def setUp(self):
+        self.user = User.objects.create_user(email='me@example.com', password='pass-12345', username='me')
+        self.client.force_login(self.user)
+
+    def test_generate_audio_passes_saved_solo_file(self):
+        from unittest import mock
+
+        recording = Recording.objects.create(
+            lesson_type=Recording.LESSON_TYPE_SOLO, room_sid='SOLOabc', duration=3,
+            user=self.user, transcript='hello world',
+        )
+        recording.audio_file.name = 'solo_recordings/2026/11/abc.wav'
+        recording.save()
+
+        system = mock.Mock()
+        system.generate_reference_audio.return_value = '/tmp/reference_x.wav'
+        system.get_room_recording.return_value = '/tmp/recording_SOLOabc.wav'
+        with mock.patch('conversation_analysis.views._pronunciation_system', return_value=system):
+            response = self.client.post(reverse('conversation_analysis:generate_audio'), {'room_sid': 'SOLOabc'})
+
+        self.assertEqual(response.status_code, 200)
+        system.get_room_recording.assert_called_once_with('SOLOabc', local_audio_path=recording.audio_file.path)
+
+    @skipUnless(HAS_LIBROSA, 'librosa is not installed')
+    def test_get_room_recording_copies_local_file(self):
+        from .service_audio import PronunciationAnalysisSystem
+
+        with tempfile.TemporaryDirectory() as tmp, override_settings(TEMP_AUDIO_DIR=tmp):
+            source = Path(tmp, 'saved.wav')
+            source.write_bytes(b'RIFFdata')
+            path = PronunciationAnalysisSystem('dummy-key').get_room_recording('SOLOabc', local_audio_path=str(source))
+
+            self.assertEqual(Path(path).name, 'recording_SOLOabc.wav')
+            self.assertEqual(Path(path).read_bytes(), b'RIFFdata')

@@ -5,7 +5,7 @@
 | アプリ | 内容 |
 |---|---|
 | `word_learning` | 単語帳・単語クイズ（CEFR レベル別）、ローカル LLM による例文生成と英作文の出題・採点 |
-| `video_chat` | Twilio Video による講師と生徒のビデオレッスン。生徒の音声を録音し、Whisper で文字起こし |
+| `video_chat` | Twilio Video による講師と生徒のビデオレッスンと、一人で話して録音する一人用レッスン。生徒の音声を Whisper で文字起こし |
 | `conversation_analysis` | 文字起こしの語彙分析（頻出語・品詞・MTLD）、類義語の提案、お手本音声（TTS）との発音比較 |
 | `english_conversation` | OpenAI Realtime API を使った会話練習（開発途中のため、現在は `INSTALLED_APPS` に含まれていません） |
 
@@ -29,7 +29,12 @@ python manage.py runserver
 
 - ログイン後のトップ: `/word_learning/`
 - ビデオレッスン: `/video_chat/video_lesson/`
+- 一人用レッスン: `/video_chat/solo/`（CEFR レベルに合ったお題について話し、ブラウザのマイクで録音）
 - 録音一覧: `/video_chat/recordings/`
+
+一人用レッスンの録音は `private_media/` に保存され、本人だけが再生できます。
+ブラウザのマイクは HTTPS か `localhost` でしか使えないので、外部端末からは ngrok などで HTTPS 公開してください。
+お題は `video_chat/topics.py` で編集できます。
 
 Twilio のビデオ通話を外部端末から試す場合は ngrok などで HTTPS 公開してください（`*.ngrok-free.app` は許可済み）。
 
@@ -41,5 +46,5 @@ python manage.py test
 
 ## 注意
 
-- `.env`、`db.sqlite3`、`media/`、`temp_audio/`、`logs/` には秘密情報や録音などの個人データが入るため、Git にはコミットしません（`.gitignore` 済み）。
+- `.env`、`db.sqlite3`、`media/`、`private_media/`、`temp_audio/`、`logs/` には秘密情報や録音などの個人データが入るため、Git にはコミットしません（`.gitignore` 済み）。
 - 録音ルールは identity が `student` の参加者の音声だけを録音する設定のため、1 ルームにつき生徒 1 人を前提としています。

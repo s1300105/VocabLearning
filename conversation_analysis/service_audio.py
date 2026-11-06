@@ -2,10 +2,11 @@ import difflib
 import hashlib
 import logging
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import librosa
 import numpy as np
@@ -109,7 +110,7 @@ class PronunciationAnalysisSystem:
             self._cleanup_file(wav_file)
             raise
 
-    def analyze_pronunciation(self, room_sid: str, text: str) -> Dict:
+    def analyze_pronunciation(self, room_sid: str, text: str, local_audio_path: Optional[str] = None) -> Dict:
         """
         発音分析を実行
         """
@@ -117,7 +118,7 @@ class PronunciationAnalysisSystem:
         reference_audio_path = None
         
         try:
-            student_audio_path = self.get_room_recording(room_sid)
+            student_audio_path = self.get_room_recording(room_sid, local_audio_path=local_audio_path)
             self._active_files.add(student_audio_path)
             student_audio, _ = librosa.load(student_audio_path, sr=self.sample_rate)
             
@@ -188,8 +189,18 @@ class PronunciationAnalysisSystem:
 
 
 
-    def get_room_recording(self, room_sid: str) -> str:
-        """録音データを取得してWAVファイルとして保存"""
+    def get_room_recording(self, room_sid: str, local_audio_path: Optional[str] = None) -> str:
+        """録音データを取得して作業ディレクトリに WAV ファイルとして保存
+
+        local_audio_path が指定された場合（一人用レッスン）は、Twilio からではなく
+        サーバーに保存済みの WAV（16kHz モノラル）をコピーして使う。
+        """
+        if local_audio_path:
+            wav_file = self.temp_dir / f"recording_{room_sid}.wav"
+            shutil.copyfile(local_audio_path, wav_file)
+            logger.info(f"Using saved solo recording: {wav_file}")
+            return str(wav_file)
+
         try:
             media_files = cache.get(f'room_recordings_{room_sid}')
 

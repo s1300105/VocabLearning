@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Practice</title>
+    <link rel="stylesheet" href="{% static 'video_chat/css/solo_lesson.css' %}">
+</head>
+<body>
+    {% csrf_token %}
+    <main class="solo-container">
+        <header class="solo-header">
+            <h1>Solo Practice</h1>
+            <nav>
+                <a href="{% url 'video_chat:video_lesson' %}">Room lesson</a>
+                <a href="{% url 'video_chat:recording_list' %}">My recordings</a>
+            </nav>
+        </header>
+
+        <section class="topic-card" aria-labelledby="topic-label">
+            <p id="topic-label" class="topic-label">
+                Today's topic{% if cefr %} <span class="level">{{ cefr }}</span>{% endif %}
+            </p>
+            <p id="topic-text" class="topic-text">{{ topic }}</p>
+            <a id="new-topic" class="text-button" href="{% url 'video_chat:solo_lesson' %}?previous={{ topic|urlencode }}">Another topic</a>
+        </section>
+
+        <section class="recorder" aria-live="polite">
+            <p class="hint">
+                Speak about the topic for about 1–3 minutes (up to {{ max_seconds }} seconds).
+                When you finish, your speech is transcribed and analyzed.
+            </p>
+
+            <div class="timer" id="timer">0:00</div>
+
+            <div class="buttons">
+                <button type="button" id="start-button" class="primary">Start recording</button>
+                <button type="button" id="stop-button" class="danger" hidden>Stop</button>
+                <button type="button" id="retry-button" hidden>Record again</button>
+                <button type="button" id="submit-button" class="primary" hidden>Analyze my speech</button>
+            </div>
+
+            <audio id="preview" controls hidden></audio>
+
+            <p id="status" class="status"></p>
+        </section>
+    </main>
+
+    {{ topic|json_script:"solo-topic" }}
+    {{ max_seconds|json_script:"solo-max-seconds" }}
+    {{ min_seconds|json_script:"solo-min-seconds" }}
+    <script>
+        window.SOLO_UPLOAD_URL = "{% url 'video_chat:solo_upload' %}";
+    </script>
+    <script src="{% static 'video_chat/js/solo_lesson.js' %}"></script>
+</body>
+</html>

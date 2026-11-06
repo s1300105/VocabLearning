@@ -12,6 +12,9 @@ urlpatterns = [
     path('transcribe_audio/', views.transcribe_audio, name="transcribe_audio"),  # 追加
     path('recording/<int:recording_id>/status/', views.recording_status, name='recording_status'),
     path('recordings/', views.recording_list, name='recording_list'),
+    path('solo/', views.solo_lesson, name='solo_lesson'),
+    path('solo/upload/', views.solo_upload, name='solo_upload'),
+    path('solo/audio/<int:recording_id>/', views.solo_audio, name='solo_audio'),
 ]
 
 
