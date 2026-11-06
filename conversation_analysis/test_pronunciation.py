@@ -193,3 +193,40 @@ class ScoringTests(SimpleTestCase):
         self.assertTrue(0 <= scoring.word_score([1.0, 1.0]) <= 1)
         self.assertTrue(0 <= scoring.sentence_score([1.0, 0.2], [3, 2]) <= 1)
         self.assertEqual(scoring.sentence_score([], []), 0.0)
+
+
+class AcousticThreadingTests(SimpleTestCase):
+    """Web サーバーはリクエストごとに別スレッドで処理するので、どのスレッドからでも推論できること"""
+
+    def test_inference_works_from_another_thread(self):
+        try:
+            import torch
+        except ImportError:
+            self.skipTest('torch is not installed')
+        import threading
+
+        from .pronunciation import acoustic
+
+        class TinyModel(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.linear = torch.nn.Linear(1, len(VOCAB))
+
+            def forward(self, input_values):
+                frames = input_values[:, ::320].unsqueeze(-1)
+                return type('Output', (), {'logits': self.linear(frames)})()
+
+        model = fake_model()
+        model.model = TinyModel()
+        model.feature_extractor = lambda audio, sampling_rate, return_tensors: type(
+            'Inputs', (), {'input_values': torch.tensor(audio).unsqueeze(0)})()
+
+        results = []
+        thread = threading.Thread(target=lambda: results.append(
+            acoustic.frame_posteriors(np.zeros(16000, dtype=np.float32), model)))
+        thread.start()
+        thread.join()
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].shape[1], len(VOCAB))
+        self.assertTrue(np.allclose(results[0].sum(axis=1), 1.0))

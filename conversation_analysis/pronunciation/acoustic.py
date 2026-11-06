@@ -64,7 +64,6 @@ def load_model() -> AcousticModel:
     if missing:
         logger.warning(f"Tokens not in the model vocabulary: {sorted(missing)}")
 
-    torch.set_grad_enabled(False)
     return AcousticModel(model=model, feature_extractor=feature_extractor, vocab=vocab,
                          blank_id=blank_id, allowed_mask=allowed_mask)
 
@@ -78,13 +77,17 @@ def load_audio(path: str) -> np.ndarray:
 
 def frame_logits(audio: np.ndarray, acoustic: AcousticModel = None) -> np.ndarray:
     """(フレーム数, 記号数) のロジット（softmax 前の値）を返す"""
+    import torch
+
     acoustic = acoustic or load_model()
     chunk = int(CHUNK_SECONDS * SAMPLE_RATE)
     context = int(CONTEXT_SECONDS * SAMPLE_RATE)
     samples_per_frame = int(FRAME_SECONDS * SAMPLE_RATE)
 
     pieces = []
-    with _inference_lock:
+    # 勾配計算の無効化はスレッドごとの設定なので、推論のたびにここで行う
+    # （Web サーバーはリクエストごとに別のスレッドで処理するため）
+    with _inference_lock, torch.inference_mode():
         for start in range(0, max(len(audio), 1), chunk):
             end = min(start + chunk, len(audio))
             left = max(0, start - context)
