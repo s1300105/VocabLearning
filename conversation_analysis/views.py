@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from video_chat.decorators import login_required_json
@@ -23,11 +24,11 @@ AUDIO_FILES_SESSION_KEY = 'pronunciation_audio_files'
 
 
 def _get_user_recording(request, room_sid):
-    """ログインユーザー自身の録音だけを返す（他人の room_sid なら 404）"""
+    """ログインユーザー自身の、発音チェックできる録音だけを返す（他人の room_sid なら 404）"""
     if not room_sid:
         raise Http404("Recording not found")
     recording = Recording.objects.filter(room_sid=room_sid, user=request.user).first()
-    if recording is None or not recording.transcript:
+    if recording is None or not recording.pronunciation_text:
         raise Http404("Recording not found")
     return recording
 
@@ -80,8 +81,10 @@ def analysis_detail(request, recording_id):
 def audio_analysis(request):
     recording = _get_user_recording(request, request.GET.get('room_sid'))
     return render(request, 'conversation_analysis/audio_analysis.html', {
+        'recording': recording,
         'room_sid': recording.room_sid,
-        'transcript': recording.transcript,
+        'text': recording.pronunciation_text,
+        'is_read_aloud': recording.is_read_aloud,
     })
 
 
@@ -92,75 +95,68 @@ def _local_audio_path(recording):
     return None
 
 
-def _pronunciation_system():
-    from .service_audio import PronunciationAnalysisSystem  # librosa などの重い依存を遅延読み込み
+def _audio_service():
+    from .service_audio import PronunciationAnalysisSystem
 
     return PronunciationAnalysisSystem(settings.OPENAI_API_KEY)
 
 
-@login_required_json
-@require_POST
-def generate_audio(request):
-    try:
-        recording = _get_user_recording(request, request.POST.get('room_sid'))
-    except Http404:
-        return JsonResponse({'error': 'Recording not found'}, status=404)
-
-    try:
-        system = _pronunciation_system()
-        audio_path = system.generate_reference_audio(recording.transcript)
-        audio_path_recorded = system.get_room_recording(
-            recording.room_sid, local_audio_path=_local_audio_path(recording))
-    except Exception:
-        logger.exception("Error in generate_audio")
-        return JsonResponse({'error': 'Failed to prepare audio'}, status=500)
-
-    _allow_audio_files(request, audio_path, audio_path_recorded)
-    return JsonResponse({
-        'audio_path': Path(audio_path).name,
-        'audio_path_recorded': Path(audio_path_recorded).name,
-    })
+def _audio_url(filename):
+    return reverse('conversation_analysis:get_audio_file', args=[filename])
 
 
 @login_required_json
 @require_POST
 def analyze_pronunciation(request):
+    """学習者の録音を、ローカルの音素認識モデルで音素ごとに採点する（外部 API は使わない）"""
     try:
         recording = _get_user_recording(request, request.POST.get('room_sid'))
     except Http404:
         return JsonResponse({'error': 'Recording not found'}, status=404)
 
     try:
-        logger.info(f"Starting pronunciation analysis for room {recording.room_sid}")
-        result = _pronunciation_system().analyze_pronunciation(
-            recording.room_sid, recording.transcript, local_audio_path=_local_audio_path(recording))
+        from .pronunciation.assessor import get_assessor
+    except ImportError:
+        logger.exception("Pronunciation model dependencies are missing")
+        return JsonResponse({'error': 'The pronunciation model is not installed on the server'}, status=503)
+
+    try:
+        learner_path = _audio_service().get_room_recording(
+            recording.room_sid, local_audio_path=_local_audio_path(recording))
+        result = get_assessor().assess_file(learner_path, recording.pronunciation_text)
+    except ValueError as e:
+        # 録音が短すぎて文と対応付けられない、評価できる単語がない、など
+        logger.warning(f"Pronunciation analysis rejected: {e}")
+        return JsonResponse({'error': 'Could not match your recording with the text. '
+                                      'Please record the whole sentence again.'}, status=400)
     except Exception:
         logger.exception("Error in analyze_pronunciation")
         return JsonResponse({'error': 'Failed to analyze pronunciation'}, status=500)
 
-    word_comparisons = [
-        {
-            'word': comp['word'],
-            'difference_score': float(comp['difference_score']),
-            'similarity': float(comp['similarity']),
-            'start_time': float(comp['start_time']),
-            'end_time': float(comp['end_time']),
-            'duration_difference': float(comp['duration_difference']),
-        }
-        for comp in result['word_comparisons']
-    ]
-    word_comparisons.sort(key=lambda x: x['difference_score'], reverse=True)
+    _allow_audio_files(request, learner_path)
+    result['learner_audio_url'] = _audio_url(Path(learner_path).name)
+    return JsonResponse(result)
 
-    audio_paths = result['audio_paths']
-    _allow_audio_files(request, *audio_paths.values())
 
-    return JsonResponse({
-        'score': float(result['score']),
-        'total_words': len(word_comparisons),
-        'word_comparisons': word_comparisons,
-        'sentence_boundaries': result['sentence_boundaries'],
-        'audio_paths': {key: Path(path).name for key, path in audio_paths.items()},
-    })
+@login_required_json
+@require_POST
+def generate_audio(request):
+    """お手本の音声（OpenAI TTS）を作る。聞き比べ用で、採点には使わない"""
+    try:
+        recording = _get_user_recording(request, request.POST.get('room_sid'))
+    except Http404:
+        return JsonResponse({'error': 'Recording not found'}, status=404)
+    if not settings.OPENAI_API_KEY:
+        return JsonResponse({'error': 'Model voice is not available'}, status=503)
+
+    try:
+        audio_path = _audio_service().generate_reference_audio(recording.pronunciation_text)
+    except Exception:
+        logger.exception("Error in generate_audio")
+        return JsonResponse({'error': 'Failed to prepare the model voice'}, status=500)
+
+    _allow_audio_files(request, audio_path)
+    return JsonResponse({'model_audio_url': _audio_url(Path(audio_path).name)})
 
 
 @login_required
@@ -173,24 +169,3 @@ def get_audio_file(request, filename):
     if not file_path.is_file():
         raise Http404("Audio not found")
     return FileResponse(open(file_path, 'rb'), content_type='audio/wav')
-
-
-def calculate_speaking_rate(word_comparisons):
-    """単語/分の発話速度を計算"""
-    if not word_comparisons:
-        return 0
-
-    total_duration = calculate_total_duration(word_comparisons)
-    if total_duration > 0:
-        return round((len(word_comparisons) / total_duration) * 60, 1)
-    return 0
-
-
-def calculate_total_duration(word_comparisons):
-    """総発話時間を計算（秒）"""
-    if not word_comparisons:
-        return 0
-
-    last_word = max(word_comparisons, key=lambda x: x['end_time'])
-    first_word = min(word_comparisons, key=lambda x: x['start_time'])
-    return round(last_word['end_time'] - first_word['start_time'], 1)

@@ -18,10 +18,14 @@
                         [{{ recording.get_lesson_type_display }}]
                         ({{ recording.duration }}s, {{ recording.get_status_display }})
                         {% if recording.topic %}<br>Topic: {{ recording.topic }}{% endif %}
+                        {% if recording.reference_text %}<br>Read aloud: {{ recording.reference_text }}{% endif %}
                         <br>
                         <a href="{% url 'video_chat:player' %}?room_sid={{ recording.room_sid|urlencode }}">Play</a>
                         {% if recording.transcript %}
-                            | <a href="{% url 'conversation_analysis:analysis_detail' recording.id %}">Analysis</a>
+                            | <a href="{% url 'conversation_analysis:analysis_detail' recording.id %}">Vocabulary</a>
+                        {% endif %}
+                        {% if recording.pronunciation_text %}
+                            | <a href="{% url 'conversation_analysis:audio_analysis' %}?room_sid={{ recording.room_sid|urlencode }}">Pronunciation</a>
                         {% endif %}
                     </li>
                 {% endfor %}

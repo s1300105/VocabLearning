@@ -1,240 +1,146 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const modelAudio = document.getElementById('model-audio');
-    const learnerAudio = document.getElementById('learner-audio');
-    const sentenceAudio = document.getElementById('sentence-audio');
-    const message = document.getElementById('message');
-    const pronunciationScore = document.getElementById('pronunciation-score');
-    const wordsAnalyzed = document.getElementById('words-analyzed');
-    const wordComparisons = document.getElementById('word-comparisons');
-    const currentWord = document.getElementById('current-word');
-    const currentSentence = document.getElementById('current-sentence');
-    const sentenceAudioSection = document.getElementById('sentence-audio-section');
- 
-    // テンプレートから json_script で渡された値（文字列に直接埋め込まない）
+// 発音チェック: サーバーで音素ごとに採点した結果を表示する
+document.addEventListener('DOMContentLoaded', () => {
     const ROOM_SID = JSON.parse(document.getElementById('room-sid-data').textContent);
-    const TRANSCRIPT = JSON.parse(document.getElementById('transcript-data').textContent) || '';
     const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const AUDIO_BASE_URL = '/conversation_analysis/audio-analysis/get-audio/';
+    const URLS = window.PRONUNCIATION_URLS;
 
-    function postForm(url) {
-        // 文字起こしはサーバー側で保存済みのものを使うので room_sid だけを送る
+    const $ = id => document.getElementById(id);
+    const learnerAudio = $('learner-audio');
+    let stopAt = null;
+    let selectedChip = null;
+
+    function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+    }
+
+    function post(url) {
         return fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': CSRF_TOKEN,
             },
-            body: `room_sid=${encodeURIComponent(ROOM_SID)}`
+            body: `room_sid=${encodeURIComponent(ROOM_SID)}`,
+        }).then(async response => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || `Request failed (status ${response.status})`);
+            return data;
         });
     }
 
-    const PROBLEM_SIMILARITY_THRESHOLD = 0.85;
-
-    let fullAudioData = {
-        analysis: {
-            sentence_boundaries: []
+    // 学習者の録音の一部（単語）だけを再生する
+    function playSegment(start, end) {
+        if (!learnerAudio.src) return;
+        stopAt = end;
+        learnerAudio.currentTime = Math.max(0, start - 0.05);
+        learnerAudio.play();
+    }
+    learnerAudio.addEventListener('timeupdate', () => {
+        if (stopAt !== null && learnerAudio.currentTime >= stopAt) {
+            learnerAudio.pause();
+            stopAt = null;
         }
-    };
- 
-    async function loadAudiosAndAnalyze() {
+    });
+
+    function renderSummary(result) {
+        $('overall-score').textContent = result.score;
+        $('overall-score').className = `overall-score ${result.grade}`;
+        $('speed').textContent = `${result.fluency.words_per_minute} words/min`;
+        $('pauses').textContent = result.fluency.long_pauses === 0
+            ? 'None'
+            : `${result.fluency.long_pauses} (${result.fluency.long_pause_seconds}s)`;
+        $('checked').textContent = `${result.scored_words} / ${result.words.length}`;
+        $('summary').hidden = false;
+    }
+
+    function renderWords(result) {
+        const container = $('word-chips');
+        container.replaceChildren(...result.words.map(word => {
+            const chip = el('button', `word-chip ${word.grade}`, word.text);
+            chip.type = 'button';
+            chip.title = word.scored ? `${word.score} points` : 'Not in the pronunciation dictionary';
+            chip.disabled = !word.scored;
+            chip.addEventListener('click', () => showDetail(word, chip));
+            return chip;
+        }));
+    }
+
+    function showDetail(word, chip) {
+        if (selectedChip) selectedChip.classList.remove('selected');
+        selectedChip = chip;
+        chip.classList.add('selected');
+
+        $('detail-word').textContent = word.text;
+        $('detail-score').textContent = word.score;
+        $('detail-score').className = `score-badge ${word.grade}`;
+        $('detail-play').onclick = () => playSegment(word.start, word.end);
+
+        $('detail-phones').replaceChildren(...word.phones.map(phone => {
+            const item = el('li', `phone ${phone.grade}`);
+            item.append(el('span', 'ipa', `/${phone.ipa}/`), el('span', 'phone-score', phone.score));
+            item.title = phone.heard ? `Heard as /${phone.heard}/` : '';
+            return item;
+        }));
+
+        const messages = word.phones.filter(p => p.message).map(p => el('li', '', p.message));
+        $('detail-messages').replaceChildren(...messages);
+        $('word-detail').hidden = false;
+        playSegment(word.start, word.end);
+    }
+
+    function renderIssues(result) {
+        const list = $('issues');
+        list.replaceChildren(...result.issues.map(issue => {
+            const item = el('li', 'issue');
+            const head = el('div', 'issue-head');
+            head.append(
+                el('strong', '', issue.word),
+                el('span', `score-badge ${issue.grade}`, `/${issue.ipa}/ ${issue.score}`),
+            );
+            const play = el('button', 'play-button', '▶');
+            play.type = 'button';
+            play.setAttribute('aria-label', `Play "${issue.word}"`);
+            play.addEventListener('click', () => playSegment(issue.start, issue.end));
+            head.append(play);
+            item.append(head, el('p', 'issue-message', issue.message));
+            return item;
+        }));
+        $('no-issues').hidden = result.issues.length > 0;
+        $('issues-section').hidden = false;
+    }
+
+    async function analyze() {
         try {
-            message.textContent = 'Loading audio files...';
-            const audioResponse = await postForm('/conversation_analysis/audio-analysis/generate-audio/');
- 
-            const audioData = await audioResponse.json();
-            if (audioData.error) throw new Error(audioData.error);
- 
-            const modelPath = AUDIO_BASE_URL + encodeURIComponent(audioData.audio_path);
-            const learnerPath = AUDIO_BASE_URL + encodeURIComponent(audioData.audio_path_recorded);
- 
-            modelAudio.src = modelPath;
-            learnerAudio.src = learnerPath;
-            
-            await new Promise(resolve => {
-                const loadPromises = [
-                    new Promise(res => modelAudio.addEventListener('loadeddata', res, {once: true})),
-                    new Promise(res => learnerAudio.addEventListener('loadeddata', res, {once: true}))
-                ];
-                Promise.all(loadPromises).then(resolve);
-            });
- 
-            message.textContent = 'Analyzing pronunciation...';
- 
-            const analysisResponse = await postForm('/conversation_analysis/audio-analysis/analyze/');
- 
-            const analysisData = await analysisResponse.json();
-            if (analysisData.error) throw new Error(analysisData.error);
- 
-            console.log('Analysis data received:', analysisData);
- 
-            updateAudioData(analysisData);
-            displayAnalysisResults(analysisData);
-            message.textContent = '';
- 
+            const result = await post(URLS.analyze);
+            learnerAudio.src = result.learner_audio_url;
+            renderSummary(result);
+            renderWords(result);
+            renderIssues(result);
+            $('status').textContent = 'Tap a word to see each sound and hear your voice.';
         } catch (error) {
-            message.textContent = `Error: ${error.message}`;
-            console.error('Error:', error);
+            $('status').textContent = `Error: ${error.message}`;
+            $('status').classList.add('error');
         }
     }
- 
-    function updateAudioData(analysisData) {
-        fullAudioData = {
-            model: modelAudio,
-            learner: learnerAudio,
-            analysis: {
-                ...analysisData,
-                sentence_boundaries: analysisData.sentence_boundaries || []
-            }
-        };
-    }
- 
-    function displayAnalysisResults(data) {
-        pronunciationScore.textContent = `${(data.score * 100).toFixed(1)}%`;
-        wordsAnalyzed.textContent = `${data.total_words || '-'} words`;
- 
-        // 類似度の低い（＝発音の差が大きい）単語を最大5つ表示する。
-        // 類似度はサーバー側と同じ値（similarity）を使う。
-        const problemWords = data.word_comparisons
-            .filter(comp => comp.similarity < PROBLEM_SIMILARITY_THRESHOLD)
-            .slice(0, 5)
-            .map(comp => {
-                const item = document.createElement('div');
-                item.className = 'word-item';
-                item.dataset.word = comp.word;
-                item.dataset.start = comp.start_time;
-                item.dataset.end = comp.end_time;
-                item.textContent = `${comp.word} (${(comp.similarity * 100).toFixed(1)}%)`;
-                item.addEventListener('click', () => playWordComparison(item));
-                return item;
-            });
-        wordComparisons.replaceChildren(...problemWords);
-    }
- 
-    function playWordComparison(wordElement) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) {
-            console.error('Web Audio API is not supported');
-            return;
+
+    $('model-button').addEventListener('click', async () => {
+        const button = $('model-button');
+        button.disabled = true;
+        $('model-status').textContent = 'Preparing the model voice…';
+        try {
+            const data = await post(URLS.modelVoice);
+            $('model-audio').src = data.model_audio_url;
+            $('model-audio').hidden = false;
+            $('model-status').textContent = '';
+            button.hidden = true;
+        } catch (error) {
+            $('model-status').textContent = `Error: ${error.message}`;
+            button.disabled = false;
         }
-    
-        const audioContext = new AudioContext();
-        const word = wordElement.dataset.word;
-        let start = parseFloat(wordElement.dataset.start);
-        let end = parseFloat(wordElement.dataset.end);
-    
-        async function processAndPlayAudio() {
-            try {
-                console.log(`Processing word: "${word}" from ${start}s to ${end}s`);
-                
-                // 時間範囲の検証と修正
-                if (start === end) {
-                    console.warn(`Zero duration detected for word: ${word}`);
-                    // 最小の時間範囲を設定（0.5秒）
-                    end = start + 0.5;
-                }
-         
-                const response = await fetch(modelAudio.src);
-                const buffer = await response.arrayBuffer();
-                const audioBuffer = await audioContext.decodeAudioData(buffer);
-         
-                // より広い文脈を取得（前後1秒）
-                const contextStart = Math.max(0, start - 1);
-                const contextEnd = Math.min(end + 1, audioBuffer.duration);
-         
-                console.log(`Audio buffer info:`, {
-                    duration: audioBuffer.duration,
-                    sampleRate: audioBuffer.sampleRate,
-                    numberOfChannels: audioBuffer.numberOfChannels,
-                    contextStart,
-                    contextEnd
-                });
-         
-                const startSample = Math.floor(contextStart * audioBuffer.sampleRate);
-                const endSample = Math.floor(contextEnd * audioBuffer.sampleRate);
-         
-                // バッファ範囲の検証
-                if (startSample >= endSample) {
-                    throw new Error(`Invalid time range: ${contextStart}s - ${contextEnd}s`);
-                }
-         
-                const length = endSample - startSample;
-                
-                // より詳細なデバッグ情報
-                console.log(`Buffer details:`, {
-                    startSample,
-                    endSample,
-                    length,
-                    maxLength: audioBuffer.length
-                });
-         
-                const segmentBuffer = audioContext.createBuffer(
-                    audioBuffer.numberOfChannels,
-                    length,
-                    audioBuffer.sampleRate
-                );
-         
-                // データをコピー
-                for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-                    const channelData = audioBuffer.getChannelData(channel);
-                    const segment = channelData.subarray(startSample, endSample);
-                    segmentBuffer.copyToChannel(segment, channel);
-                }
-         
-                // UIの更新
-                wordElement.classList.add('playing');
-                currentWord.textContent = word;
-         
-                // 文脈を表示
-                const sentence = TRANSCRIPT.split(/[.!?]+/)
-                    .find(s => s.toLowerCase().includes(word.toLowerCase()));
-                if (sentence) {
-                    currentSentence.textContent = sentence.trim() + '.';
-                }
-                sentenceAudioSection.style.display = 'block';
-         
-                // 再生
-                const source = audioContext.createBufferSource();
-                source.buffer = segmentBuffer;
-                source.connect(audioContext.destination);
-                source.start(0);
-         
-                // 単語のハイライトタイミング
-                const wordOffset = start - contextStart;
-                setTimeout(() => {
-                    wordElement.classList.add('highlight');
-                    setTimeout(() => {
-                        wordElement.classList.remove('highlight');
-                    }, (end - start) * 1000);
-                }, wordOffset * 1000);
-         
-                // 再生終了時の処理
-                source.onended = () => {
-                    wordElement.classList.remove('playing', 'highlight');
-                };
-         
-                console.log('Audio playback started successfully');
-         
-            } catch (error) {
-                console.error('Audio processing error:', error);
-                console.log('Full error details:', {
-                    word,
-                    start,
-                    end,
-                    audioContext: audioContext?.state,
-                    error: error.message
-                });
-                wordElement.classList.remove('playing', 'highlight');
-                message.textContent = `Error playing audio: ${error.message}`;
-            }
-         }
-    
-        // 既存の再生を停止
-        document.querySelectorAll('.word-item').forEach(item => {
-            item.classList.remove('playing', 'highlight');
-        });
-    
-        processAndPlayAudio();
-    }
- 
-    loadAudiosAndAnalyze();
- });
+    });
+
+    analyze();
+});

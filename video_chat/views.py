@@ -23,7 +23,7 @@ from twilio.base.exceptions import TwilioRestException
 from .decorators import login_required_json
 from .models import Recording
 from .services import InvalidSoloRecording, RecordingService, SoloRecordingService
-from .topics import random_topic
+from .topics import random_sentence, random_topic
 
 logger = logging.getLogger('video_chat')
 
@@ -420,16 +420,28 @@ def player_view(request):
         'transcript': recording.transcript,
         'recording_id': recording.id,
         'topic': recording.topic,
+        'reference_text': recording.reference_text,
+        'pronunciation_url': f"{reverse('conversation_analysis:audio_analysis')}?room_sid={recording.room_sid}",
     })
+
+
+SOLO_MODE_TALK = 'talk'   # お題について自由に話す
+SOLO_MODE_READ = 'read'   # 表示された文を読み上げる（発音チェック向け）
 
 
 @login_required
 @require_http_methods(["GET"])
 def solo_lesson(request):
-    """一人用レッスン: お題を表示し、ブラウザで録音する"""
-    topic = random_topic(request.user.cefr, exclude=request.GET.get('previous'))
+    """一人用レッスン: お題（または音読する文）を表示し、ブラウザで録音する"""
+    mode = SOLO_MODE_READ if request.GET.get('mode') == SOLO_MODE_READ else SOLO_MODE_TALK
+    previous = request.GET.get('previous')
+    if mode == SOLO_MODE_READ:
+        prompt = random_sentence(request.user.cefr, exclude=previous)
+    else:
+        prompt = random_topic(request.user.cefr, exclude=previous)
     return render(request, 'video_chat/solo_lesson.html', {
-        'topic': topic,
+        'mode': mode,
+        'prompt': prompt,
         'cefr': request.user.cefr,
         'max_seconds': settings.SOLO_MAX_RECORDING_SECONDS,
         'min_seconds': settings.SOLO_MIN_RECORDING_SECONDS,
@@ -446,11 +458,17 @@ def solo_upload(request):
     if uploaded.size > settings.SOLO_MAX_UPLOAD_BYTES:
         return JsonResponse({'error': 'The recording is too large'}, status=400)
 
+    read_aloud = request.POST.get('mode') == SOLO_MODE_READ
+    prompt = request.POST.get('prompt', '').strip()
+    if read_aloud and not prompt:
+        return JsonResponse({'error': 'The sentence to read is missing'}, status=400)
+
     try:
         recording = SoloRecordingService().create_recording(
             user=request.user,
             uploaded_file=uploaded,
-            topic=request.POST.get('topic', ''),
+            topic='' if read_aloud else prompt,
+            reference_text=prompt if read_aloud else '',
         )
     except InvalidSoloRecording as e:
         return JsonResponse({'error': str(e)}, status=400)
@@ -458,11 +476,15 @@ def solo_upload(request):
         logger.exception("Error in solo_upload")
         return JsonResponse({'error': 'Failed to transcribe the recording'}, status=500)
 
+    player_url = f"{reverse('video_chat:player')}?room_sid={recording.room_sid}"
+    pronunciation_url = f"{reverse('conversation_analysis:audio_analysis')}?room_sid={recording.room_sid}"
     return JsonResponse({
         'status': 'success',
         'recording_id': recording.id,
         'room_sid': recording.room_sid,
-        'player_url': f"{reverse('video_chat:player')}?room_sid={recording.room_sid}",
+        'player_url': player_url,
+        # 音読は発音チェックが目的なので、直接その画面へ進む
+        'next_url': pronunciation_url if read_aloud else player_url,
     })
 
 

@@ -52,6 +52,30 @@ body {
 .solo-header nav { display: flex; gap: 16px; }
 .solo-header a, .text-button { color: var(--primary); }
 
+.mode-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.mode-tab {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--muted);
+    text-align: center;
+    text-decoration: none;
+}
+
+.mode-tab.active {
+    background: var(--primary);
+    color: var(--primary-text);
+}
+
 .topic-card, .recorder {
     background: var(--surface);
     border: 1px solid var(--border);

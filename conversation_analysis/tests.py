@@ -1,7 +1,5 @@
-import importlib.util
 import tempfile
 from pathlib import Path
-from unittest import skipUnless
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
@@ -13,7 +11,6 @@ from .views import AUDIO_FILES_SESSION_KEY
 from .vocab_diversity_analysis import VocabularyDiversityAnalyzer
 
 User = get_user_model()
-HAS_LIBROSA = importlib.util.find_spec('librosa') is not None
 
 
 class AudioEndpointsTests(TestCase):
@@ -72,91 +69,80 @@ class VocabularyDiversityTests(TestCase):
         self.assertEqual(analyzer.calculate_mtld([]), 0.0)
 
 
-@skipUnless(HAS_LIBROSA, 'librosa is not installed')
-class PronunciationAlignmentTests(TestCase):
-    def test_skipped_word_does_not_shift_alignment(self):
-        from .service_audio import PronunciationAnalysisSystem, WordSegment
-
-        def segs(words):
-            return [WordSegment(text=w, start=i, end=i + 0.5, confidence=1.0) for i, w in enumerate(words)]
-
-        reference = segs(['I', 'like', 'green', 'apples.'])
-        student = segs(['I', 'like', 'apples'])  # "green" を抜かした
-
-        pairs = PronunciationAnalysisSystem.align_segments(student, reference)
-
-        self.assertEqual([(s.text, r.text) for s, r in pairs],
-                         [('I', 'I'), ('like', 'like'), ('apples', 'apples.')])
-
-    def test_misrecognized_word_is_still_compared(self):
-        from .service_audio import PronunciationAnalysisSystem, WordSegment
-
-        def segs(words):
-            return [WordSegment(text=w, start=i, end=i + 0.5, confidence=1.0) for i, w in enumerate(words)]
-
-        reference = segs(['I', 'like', 'rice'])
-        student = segs(['I', 'like', 'lice'])  # 発音の誤りで別の単語として聞き取られた
-
-        pairs = PronunciationAnalysisSystem.align_segments(student, reference)
-
-        self.assertIn(('lice', 'rice'), [(s.text, r.text) for s, r in pairs])
-
-    def test_extra_word_next_to_misrecognized_word(self):
-        from .service_audio import PronunciationAnalysisSystem, WordSegment
-
-        def segs(words):
-            return [WordSegment(text=w, start=i, end=i + 0.5, confidence=1.0) for i, w in enumerate(words)]
-
-        reference = segs(['I', 'like', 'apples.'])
-        student = segs(['I', 'like', 'apple', 'um'])
-
-        pairs = PronunciationAnalysisSystem.align_segments(student, reference)
-
-        self.assertEqual([(s.text, r.text) for s, r in pairs],
-                         [('I', 'I'), ('like', 'like'), ('apple', 'apples.')])
-
-    def test_similarity_is_between_zero_and_one(self):
-        from .service_audio import PronunciationAnalysisSystem
-
-        self.assertEqual(PronunciationAnalysisSystem.similarity_from_distance(0), 1.0)
-        self.assertAlmostEqual(PronunciationAnalysisSystem.similarity_from_distance(150), 0.85)
-        self.assertEqual(PronunciationAnalysisSystem.similarity_from_distance(10_000), 0.0)
-
-
-class SoloPronunciationTests(TestCase):
-    """一人用レッスンの録音は Twilio ではなく保存済みのファイルを使う"""
+class PronunciationViewTests(TestCase):
+    """発音チェックの API（採点エンジン自体は test_pronunciation.py でテストする）"""
 
     def setUp(self):
         self.user = User.objects.create_user(email='me@example.com', password='pass-12345', username='me')
         self.client.force_login(self.user)
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
 
-    def test_generate_audio_passes_saved_solo_file(self):
-        from unittest import mock
-
+    def make_read_aloud(self):
         recording = Recording.objects.create(
             lesson_type=Recording.LESSON_TYPE_SOLO, room_sid='SOLOabc', duration=3,
-            user=self.user, transcript='hello world',
+            user=self.user, reference_text='I like rice.', status='transcribed',
         )
         recording.audio_file.name = 'solo_recordings/2026/11/abc.wav'
         recording.save()
+        return recording
 
-        system = mock.Mock()
-        system.generate_reference_audio.return_value = '/tmp/reference_x.wav'
-        system.get_room_recording.return_value = '/tmp/recording_SOLOabc.wav'
-        with mock.patch('conversation_analysis.views._pronunciation_system', return_value=system):
-            response = self.client.post(reverse('conversation_analysis:generate_audio'), {'room_sid': 'SOLOabc'})
+    def test_read_aloud_page_works_without_transcript(self):
+        self.make_read_aloud()
+        response = self.client.get(reverse('conversation_analysis:audio_analysis'), {'room_sid': 'SOLOabc'})
+        self.assertContains(response, 'I like rice.')
+        self.assertContains(response, 'Sentence you read')
+
+    def test_analyze_uses_reference_text_and_saved_file(self):
+        from unittest import mock
+
+        recording = self.make_read_aloud()
+        audio_service = mock.Mock()
+        audio_service.get_room_recording.return_value = str(Path(self.tmp.name, 'recording_SOLOabc.wav'))
+        assessor = mock.Mock()
+        assessor.assess_file.return_value = {'score': 88, 'words': [], 'issues': []}
+
+        with mock.patch('conversation_analysis.views._audio_service', return_value=audio_service), \
+                mock.patch('conversation_analysis.pronunciation.assessor.get_assessor', return_value=assessor):
+            response = self.client.post(reverse('conversation_analysis:analyze_pronunciation'), {'room_sid': 'SOLOabc'})
 
         self.assertEqual(response.status_code, 200)
-        system.get_room_recording.assert_called_once_with('SOLOabc', local_audio_path=recording.audio_file.path)
+        self.assertEqual(response.json()['score'], 88)
+        audio_service.get_room_recording.assert_called_once_with(
+            'SOLOabc', local_audio_path=recording.audio_file.path)
+        assessor.assess_file.assert_called_once_with(
+            audio_service.get_room_recording.return_value, 'I like rice.')
+        # 再生用 URL が返り、そのファイルはこのセッションで取得できる
+        self.assertEqual(response.json()['learner_audio_url'],
+                         reverse('conversation_analysis:get_audio_file', args=['recording_SOLOabc.wav']))
+        self.assertIn('recording_SOLOabc.wav', self.client.session[AUDIO_FILES_SESSION_KEY])
 
-    @skipUnless(HAS_LIBROSA, 'librosa is not installed')
+    def test_recording_that_does_not_match_text_returns_400(self):
+        from unittest import mock
+
+        self.make_read_aloud()
+        assessor = mock.Mock()
+        assessor.assess_file.side_effect = ValueError('The audio is too short for the expected text.')
+        with mock.patch('conversation_analysis.views._audio_service'), \
+                mock.patch('conversation_analysis.pronunciation.assessor.get_assessor', return_value=assessor):
+            response = self.client.post(reverse('conversation_analysis:analyze_pronunciation'), {'room_sid': 'SOLOabc'})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertNotIn('too short', response.json()['error'])
+
+    def test_model_voice_needs_api_key(self):
+        self.make_read_aloud()
+        with override_settings(OPENAI_API_KEY=None):
+            response = self.client.post(reverse('conversation_analysis:generate_audio'), {'room_sid': 'SOLOabc'})
+        self.assertEqual(response.status_code, 503)
+
     def test_get_room_recording_copies_local_file(self):
         from .service_audio import PronunciationAnalysisSystem
 
-        with tempfile.TemporaryDirectory() as tmp, override_settings(TEMP_AUDIO_DIR=tmp):
-            source = Path(tmp, 'saved.wav')
+        with override_settings(TEMP_AUDIO_DIR=self.tmp.name):
+            source = Path(self.tmp.name, 'saved.wav')
             source.write_bytes(b'RIFFdata')
-            path = PronunciationAnalysisSystem('dummy-key').get_room_recording('SOLOabc', local_audio_path=str(source))
+            path = PronunciationAnalysisSystem().get_room_recording('SOLOabc', local_audio_path=str(source))
 
             self.assertEqual(Path(path).name, 'recording_SOLOabc.wav')
             self.assertEqual(Path(path).read_bytes(), b'RIFFdata')

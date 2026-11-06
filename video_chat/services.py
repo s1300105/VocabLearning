@@ -165,13 +165,16 @@ class SoloRecordingService:
     """一人用レッスン: ブラウザで録音した音声を保存して文字起こしする"""
 
     SAMPLE_RATE = 16000  # Whisper と発音分析で使うサンプリングレート
+    MAX_REFERENCE_TEXT_LENGTH = 1000
 
     def __init__(self, transcription_service=None):
         self.transcription_service = transcription_service or AudioTranscriptionService()
 
-    def create_recording(self, user, uploaded_file, topic=''):
+    def create_recording(self, user, uploaded_file, topic='', reference_text=''):
         """アップロードされた音声を WAV に変換して保存し、文字起こしまで行う。
 
+        reference_text（音読モードで読んだ文）がある場合は、その文を正解として発音を評価するので
+        文字起こし（外部 API）は行わない。
         音声として読めない・短すぎる・長すぎる場合は InvalidSoloRecording を送出する。
         文字起こしに失敗した場合は録音を failed にして例外をそのまま送出する。
         """
@@ -202,11 +205,16 @@ class SoloRecordingService:
                 duration=round(duration),
                 user=user,
                 topic=topic[:Recording._meta.get_field('topic').max_length],
+                reference_text=reference_text[:self.MAX_REFERENCE_TEXT_LENGTH],
                 status='pending',
             )
             with open(wav_path, 'rb') as f:
                 recording.audio_file.save(f'{solo_id}.wav', File(f), save=False)
             recording.save()
+
+            if recording.is_read_aloud:
+                recording.mark_as_transcribed()  # 正解の文が分かっているので、すぐに評価できる
+                return recording
 
             try:
                 recording.transcript = self.transcription_service.transcribe_file(wav_path)

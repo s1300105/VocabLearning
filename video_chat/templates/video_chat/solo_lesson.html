@@ -18,18 +18,33 @@
             </nav>
         </header>
 
+        <nav class="mode-tabs" aria-label="Practice mode">
+            <a href="{% url 'video_chat:solo_lesson' %}" class="mode-tab{% if mode == 'talk' %} active{% endif %}"
+               {% if mode == 'talk' %}aria-current="page"{% endif %}>Free talk</a>
+            <a href="{% url 'video_chat:solo_lesson' %}?mode=read" class="mode-tab{% if mode == 'read' %} active{% endif %}"
+               {% if mode == 'read' %}aria-current="page"{% endif %}>Read aloud</a>
+        </nav>
+
         <section class="topic-card" aria-labelledby="topic-label">
             <p id="topic-label" class="topic-label">
-                Today's topic{% if cefr %} <span class="level">{{ cefr }}</span>{% endif %}
+                {% if mode == 'read' %}Read this sentence{% else %}Today's topic{% endif %}
+                {% if cefr %}<span class="level">{{ cefr }}</span>{% endif %}
             </p>
-            <p id="topic-text" class="topic-text">{{ topic }}</p>
-            <a id="new-topic" class="text-button" href="{% url 'video_chat:solo_lesson' %}?previous={{ topic|urlencode }}">Another topic</a>
+            <p id="topic-text" class="topic-text">{{ prompt }}</p>
+            <a id="new-topic" class="text-button"
+               href="{% url 'video_chat:solo_lesson' %}?mode={{ mode }}&amp;previous={{ prompt|urlencode }}">
+                {% if mode == 'read' %}Another sentence{% else %}Another topic{% endif %}
+            </a>
         </section>
 
         <section class="recorder" aria-live="polite">
             <p class="hint">
-                Speak about the topic for about 1–3 minutes (up to {{ max_seconds }} seconds).
-                When you finish, your speech is transcribed and analyzed.
+                {% if mode == 'read' %}
+                    Read the sentence aloud clearly. Your pronunciation is checked sound by sound.
+                {% else %}
+                    Speak about the topic for about 1–3 minutes (up to {{ max_seconds }} seconds).
+                    When you finish, your speech is transcribed and analyzed.
+                {% endif %}
             </p>
 
             <div class="timer" id="timer">0:00</div>
@@ -38,7 +53,9 @@
                 <button type="button" id="start-button" class="primary">Start recording</button>
                 <button type="button" id="stop-button" class="danger" hidden>Stop</button>
                 <button type="button" id="retry-button" hidden>Record again</button>
-                <button type="button" id="submit-button" class="primary" hidden>Analyze my speech</button>
+                <button type="button" id="submit-button" class="primary" hidden>
+                    {% if mode == 'read' %}Check my pronunciation{% else %}Analyze my speech{% endif %}
+                </button>
             </div>
 
             <audio id="preview" controls hidden></audio>
@@ -47,7 +64,8 @@
         </section>
     </main>
 
-    {{ topic|json_script:"solo-topic" }}
+    {{ prompt|json_script:"solo-prompt" }}
+    {{ mode|json_script:"solo-mode" }}
     {{ max_seconds|json_script:"solo-max-seconds" }}
     {{ min_seconds|json_script:"solo-min-seconds" }}
     <script>

@@ -26,6 +26,8 @@ class Recording(models.Model):
     # 一人用レッスンの録音（16kHz モノラル WAV）。公開ディレクトリには置かない
     audio_file = models.FileField(upload_to='solo_recordings/%Y/%m/', storage=PrivateMediaStorage(), blank=True)
     topic = models.CharField(max_length=300, blank=True)
+    # 音読モードで読み上げた文。発音評価はこの文を正解として行う（空なら文字起こしを使う）
+    reference_text = models.TextField(blank=True)
     duration = models.IntegerField()  # 秒単位
     transcript = models.TextField(null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -49,6 +51,15 @@ class Recording(models.Model):
     @property
     def is_solo(self):
         return self.lesson_type == self.LESSON_TYPE_SOLO
+
+    @property
+    def is_read_aloud(self):
+        return bool(self.reference_text)
+
+    @property
+    def pronunciation_text(self):
+        """発音評価で「正しく言うべき文」として使う文"""
+        return self.reference_text or self.transcript or ''
 
     def mark_as_failed(self, error_message):
         self.status = 'failed'

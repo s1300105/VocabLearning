@@ -1,7 +1,8 @@
 // 一人用レッスン: ブラウザのマイクで録音し、サーバーに送って文字起こし・分析する
 document.addEventListener('DOMContentLoaded', () => {
     const readJson = id => JSON.parse(document.getElementById(id).textContent);
-    const TOPIC = readJson('solo-topic');
+    const PROMPT = readJson('solo-prompt');
+    const MODE = readJson('solo-mode');
     const MAX_SECONDS = readJson('solo-max-seconds');
     const MIN_SECONDS = readJson('solo-min-seconds');
     const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -94,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         show(stopButton);
         newTopicLink.classList.add('disabled');
         timer.classList.add('recording');
-        setStatus('Recording… speak about the topic.');
+        setStatus(MODE === 'read' ? 'Recording… read the sentence aloud.' : 'Recording… speak about the topic.');
     }
 
     function stopRecording() {
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         show(submitButton);
-        setStatus('Listen to your recording, then press "Analyze my speech".');
+        setStatus(`Listen to your recording, then press "${submitButton.textContent.trim()}".`);
     }
 
     async function submitRecording() {
@@ -131,12 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         submitButton.disabled = true;
         retryButton.disabled = true;
-        setStatus('Transcribing your speech… this can take a minute.');
+        setStatus(MODE === 'read' ? 'Uploading your recording…' : 'Transcribing your speech… this can take a minute.');
 
         const formData = new FormData();
         const mimeType = recordedBlob.type || 'audio/webm';
         formData.append('audio', recordedBlob, `recording.${extensionFor(mimeType)}`);
-        formData.append('topic', TOPIC);
+        formData.append('prompt', PROMPT);
+        formData.append('mode', MODE);
 
         try {
             const response = await fetch(window.SOLO_UPLOAD_URL, {
@@ -148,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok || data.status !== 'success') {
                 throw new Error(data.error || `Upload failed (status ${response.status})`);
             }
-            window.location.href = data.player_url;
+            window.location.href = data.next_url;
         } catch (error) {
             setStatus(`Error: ${error.message}`, true);
             submitButton.disabled = false;

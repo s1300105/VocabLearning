@@ -60,3 +60,64 @@ def random_topic(cefr=None, exclude=None):
     topics = SOLO_TOPICS.get(cefr) or SOLO_TOPICS[DEFAULT_LEVEL]
     candidates = [t for t in topics if t != exclude] or topics
     return random.choice(candidates)
+
+
+# 音読モードの例文（CEFR レベル別）。日本語話者が苦手な音（r と l、th、v と b、f、æ、
+# 語末の子音、子音の連続）を多く含めている。すべての単語が CMU 発音辞書に載っていること。
+READ_ALOUD_SENTENCES = {
+    'A1': [
+        "I really like rice and lemon tea.",
+        "This is my brother's red bike.",
+        "Three friends live near the river.",
+        "I have a very big family.",
+        "The light is on the left.",
+        "Thank you for the lovely flowers.",
+    ],
+    'A2': [
+        "Last weekend I visited my grandparents in the country.",
+        "Could you pass me the salt and pepper, please?",
+        "I usually walk to the station every morning.",
+        "The weather was really warm yesterday.",
+        "She loves playing the violin on Fridays.",
+        "We watched a funny movie together.",
+    ],
+    'B1': [
+        "I think the most important thing is to listen carefully.",
+        "Traveling abroad helps you understand other cultures.",
+        "The library is closed on the third Thursday of every month.",
+        "My favorite season is fall because of the colorful leaves.",
+        "He worked hard to improve his English vocabulary.",
+        "Would you rather live in the city or the countryside?",
+    ],
+    'B2': [
+        "Researchers believe that regular exercise improves both mental and physical health.",
+        "Although the project was challenging, the team finished it ahead of schedule.",
+        "Renewable energy will play a vital role in reducing carbon emissions.",
+        "The flight was delayed for three hours because of thick fog.",
+        "I would really appreciate it if you could reply by the end of the week.",
+        "Without clear rules, online discussions can quickly become rude.",
+    ],
+    'C1': [
+        "The government's response to the crisis was widely criticized for its lack of clarity.",
+        "Artificial intelligence raises profound questions about privacy and responsibility.",
+        "Thoroughly rehearsing a presentation is the best way to overcome nervousness.",
+        "Rural communities often struggle to attract young workers and investment.",
+        "Her argument was persuasive, although several of her assumptions were questionable.",
+        "Rarely have I read a novel with such a vivid and believable world.",
+    ],
+    'C2': [
+        "The theory's apparent elegance hides the extraordinary complexity of its assumptions.",
+        "Notwithstanding these reservations, the proposal deserves serious consideration.",
+        "Linguistic relativity remains a controversial hypothesis among cognitive scientists.",
+        "The rhetoric of the campaign deliberately blurred the line between fact and opinion.",
+        "Whether such reforms are viable depends largely on the political will to enforce them.",
+        "The thoroughness of her research was reflected in every paragraph of the report.",
+    ],
+}
+
+
+def random_sentence(cefr=None, exclude=None):
+    """音読モード用の例文をランダムに1つ返す（直前の例文は避ける）"""
+    sentences = READ_ALOUD_SENTENCES.get(cefr) or READ_ALOUD_SENTENCES[DEFAULT_LEVEL]
+    candidates = [s for s in sentences if s != exclude] or sentences
+    return random.choice(candidates)

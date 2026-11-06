@@ -173,12 +173,13 @@ class SoloLessonTestBase(VideoChatTestBase):
         settings_override.enable()
         self.addCleanup(settings_override.disable)
 
-    def upload(self, content, name='recording.wav', topic='Talk about your family.', client=None):
+    def upload(self, content, name='recording.wav', topic='Talk about your family.', client=None, mode='talk'):
         from django.core.files.uploadedfile import SimpleUploadedFile
 
         return (client or self.client).post(reverse('video_chat:solo_upload'), {
             'audio': SimpleUploadedFile(name, content, content_type='audio/wav'),
-            'topic': topic,
+            'prompt': topic,
+            'mode': mode,
         })
 
     def create_solo_recording(self, user):
@@ -204,7 +205,19 @@ class SoloLessonPageTests(SoloLessonTestBase):
         response = self.client.get(reverse('video_chat:solo_lesson'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(response.context['topic'], SOLO_TOPICS['A1'])
+        self.assertEqual(response.context['mode'], 'talk')
+        self.assertIn(response.context['prompt'], SOLO_TOPICS['A1'])
+
+    def test_read_aloud_mode_shows_sentence(self):
+        from .topics import READ_ALOUD_SENTENCES
+
+        self.user.cefr = 'A2'
+        self.user.save()
+        response = self.client.get(reverse('video_chat:solo_lesson'), {'mode': 'read'})
+
+        self.assertEqual(response.context['mode'], 'read')
+        self.assertIn(response.context['prompt'], READ_ALOUD_SENTENCES['A2'])
+        self.assertContains(response, 'Read this sentence')
 
     def test_another_topic_avoids_previous_one(self):
         from .topics import random_topic
@@ -264,6 +277,24 @@ class SoloUploadTests(SoloLessonTestBase):
         with wave.open(str(saved)) as wav:
             self.assertEqual(wav.getnchannels(), 1)
             self.assertEqual(wav.getframerate(), 16000)
+
+    def test_read_aloud_upload_skips_transcription(self):
+        with mock.patch('video_chat.services.AudioTranscriptionService.transcribe_file') as transcribe:
+            response = self.upload(make_wav_bytes(), topic='I really like rice.', mode='read')
+
+        self.assertEqual(response.status_code, 200)
+        transcribe.assert_not_called()  # 正解の文が分かっているので外部 API は使わない
+        recording = Recording.objects.get()
+        self.assertTrue(recording.is_read_aloud)
+        self.assertEqual(recording.reference_text, 'I really like rice.')
+        self.assertEqual(recording.topic, '')
+        self.assertEqual(recording.pronunciation_text, 'I really like rice.')
+        self.assertEqual(recording.status, 'transcribed')
+        self.assertIn(reverse('conversation_analysis:audio_analysis'), response.json()['next_url'])
+
+    def test_read_aloud_without_sentence_is_rejected(self):
+        response = self.upload(make_wav_bytes(), topic='', mode='read')
+        self.assertEqual(response.status_code, 400)
 
     def test_transcription_failure_marks_recording_failed(self):
         with mock.patch('video_chat.services.AudioTranscriptionService.transcribe_file',
