@@ -1,17 +1,22 @@
+from typing import Dict, List
+
 import nltk
 from nltk.tokenize import word_tokenize
-from collections import Counter
-from typing import List, Dict
+
+
+def ensure_nltk_resource(path, package):
+    """NLTK のデータが未ダウンロードのときだけダウンロードする"""
+    try:
+        nltk.data.find(path)
+    except LookupError:
+        nltk.download(package, quiet=True)
+
 
 class VocabularyDiversityAnalyzer:
     def __init__(self):
-        nltk.download('punkt_tab')
         """語彙多様性分析クラスの初期化"""
-        try:
-            nltk.data.find('tokenizers/punkt')
-        except LookupError:
-            nltk.download('punkt')
-    
+        ensure_nltk_resource('tokenizers/punkt_tab', 'punkt_tab')
+
     def preprocess_text(self, text: str) -> List[str]:
         """テキストの前処理を行う"""
         text = text.lower()

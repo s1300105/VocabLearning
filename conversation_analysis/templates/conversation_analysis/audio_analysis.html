@@ -59,9 +59,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    window.ROOM_SID = "{{ room_sid }}";
-    window.TRANSCRIPT = "{{ transcript }}";
-</script>
+{% csrf_token %}
+{{ room_sid|json_script:"room-sid-data" }}
+{{ transcript|json_script:"transcript-data" }}
 <script src="{% static 'conversation_analysis/js/audio_analysis.js' %}"></script>
 {% endblock %}

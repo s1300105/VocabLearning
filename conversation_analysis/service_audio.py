@@ -1,25 +1,34 @@
-from IPython.display import Audio, display, HTML
-import numpy as np
-import base64
-import librosa
-from pydub import AudioSegment
-from scipy.spatial.distance import cdist
-from typing import Dict, List, Tuple, Optional
-from dataclasses import dataclass
-import matplotlib.pyplot as plt
-from pathlib import Path
-from openai import OpenAI
+import difflib
+import hashlib
 import logging
-from dotenv import load_dotenv
-import os
-from video_chat.views import get_room_recordings
+import re
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List
+
+import librosa
+import numpy as np
+import requests
 from django.conf import settings
 from django.core.cache import cache
-import requests
-import tempfile
-import json
+from openai import OpenAI
+from pydub import AudioSegment
+from scipy.spatial.distance import cdist
+
+from video_chat.views import get_room_recordings
 
 logger = logging.getLogger(__name__)
+
+# MFCC 距離 → 類似度 (0〜1) への換算スケール。
+# similarity = 1 - distance / MFCC_DISTANCE_SCALE （経験的な値なので、実データで要調整）
+MFCC_DISTANCE_SCALE = 1000.0
+# これより短い区間は MFCC が安定しないので比較しない（16kHz で約 0.03 秒）
+MIN_SEGMENT_SAMPLES = 512
+
+
+def _normalize_word(text: str) -> str:
+    return re.sub(r"[^a-z0-9']", '', text.lower())
 
 @dataclass
 class WordSegment:
@@ -35,8 +44,8 @@ class PronunciationAnalysisSystem:
         """
         self.client = OpenAI(api_key=openai_api_key)
         self.sample_rate = 16000
-        self.temp_dir = Path("temp_audio")
-        self.temp_dir.mkdir(exist_ok=True)
+        self.temp_dir = Path(settings.TEMP_AUDIO_DIR)
+        self.temp_dir.mkdir(parents=True, exist_ok=True)
         self._active_files = set()  # 現在使用中のファイルを追跡
 
     def _cleanup_file(self, file_path: str) -> None:
@@ -53,7 +62,9 @@ class PronunciationAnalysisSystem:
         """OpenAI TTSを使用して参照音声を生成"""
         try:
             # 一時ファイルのパスを生成
-            temp_file = self.temp_dir / f"reference_{hash(text)}.mp3"
+            # hash() はプロセスごとに値が変わるので、安定したハッシュを使う
+            digest = hashlib.sha1(text.encode('utf-8')).hexdigest()[:16]
+            temp_file = self.temp_dir / f"reference_{digest}.mp3"
             wav_file = temp_file.with_suffix('.wav')
             
             # 既存のファイルがあれば削除
@@ -154,13 +165,15 @@ class PronunciationAnalysisSystem:
                 current_sentence['end'] = current_sentence['words'][-1]['end']
                 sentence_boundaries.append(current_sentence)
             
-            overall_score = 1.0 - np.mean([comp['difference_score'] for comp in word_comparisons])
-            overall_score = max(0, min(1, overall_score))
+            if word_comparisons:
+                overall_score = float(np.mean([comp['similarity'] for comp in word_comparisons]))
+            else:
+                overall_score = 0.0
             
             return {
                 'text': text,
                 'score': overall_score,
-                'word_comparisons': word_comparisons[:5],
+                'word_comparisons': word_comparisons,
                 'sentence_boundaries': sentence_boundaries,  # 追加
                 'audio_paths': {
                     'student': student_audio_path,
@@ -199,7 +212,7 @@ class PronunciationAnalysisSystem:
             logger.debug(f"Temporary file path: {temp_file}")
                     
             # 音声ファイルをダウンロード
-            response = requests.get(latest_audio['url'], stream=True)
+            response = requests.get(latest_audio['url'], stream=True, timeout=60)
             if response.status_code != 200:
                 raise Exception(f"Failed to download audio: {response.status_code}")
 
@@ -213,7 +226,6 @@ class PronunciationAnalysisSystem:
             wav_file = temp_file.with_suffix('.wav')
             
             try:
-                import subprocess
                 result = subprocess.run([
                     'ffmpeg',
                     '-y',
@@ -301,61 +313,97 @@ class PronunciationAnalysisSystem:
 
 
 
-    def compare_pronunciations(self, student_segments: List[WordSegment], 
-                             reference_segments: List[WordSegment], 
-                             student_audio: np.ndarray, 
-                             reference_audio: np.ndarray) -> List[Dict]:
-        logger.info("Starting pronunciation comparison")
-        logger.debug(f"Number of segments - Student: {len(student_segments)}, Reference: {len(reference_segments)}")
-        
-        word_comparisons = []
-        
-        for i, (student_seg, ref_seg) in enumerate(zip(student_segments, reference_segments)):
-            logger.debug(f"Comparing word {i+1}: '{student_seg.text}' with reference '{ref_seg.text}'")
-            
-            # Extract audio segments
-            student_start = int(student_seg.start * self.sample_rate)
-            student_end = int(student_seg.end * self.sample_rate)
-            ref_start = int(ref_seg.start * self.sample_rate)
-            ref_end = int(ref_seg.end * self.sample_rate)
-            
-            logger.debug(f"Student segment timing: {student_start}-{student_end}")
-            logger.debug(f"Reference segment timing: {ref_start}-{ref_end}")
+    @staticmethod
+    def align_segments(student_segments: List[WordSegment],
+                       reference_segments: List[WordSegment]) -> List[tuple]:
+        """単語のテキストで学習者と参照音声を対応付ける。
 
-            student_word = student_audio[student_start:student_end]
-            reference_word = reference_audio[ref_start:ref_end]
-            
-            # Calculate MFCCs
+        単純に先頭から zip すると、学習者が1語でも抜かしたり付け足したりした時点で
+        以降がすべてずれるため、difflib で対応を取る。
+        - 一致した単語は組にする
+        - 同じ語数どうしの置き換え（例: "lice" が "rice" と聞き取られた）は
+          発音の誤りの可能性が高いので、1対1で組にする
+        - 語数が違う置き換えは、綴りが近い単語どうしだけを組にする
+        - それ以外の抜けた単語・余分な単語は比較しない
+        """
+        student_words = [_normalize_word(seg.text) for seg in student_segments]
+        reference_words = [_normalize_word(seg.text) for seg in reference_segments]
+        matcher = difflib.SequenceMatcher(a=student_words, b=reference_words, autojunk=False)
+
+        pairs = []
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == 'equal' or (tag == 'replace' and i2 - i1 == j2 - j1):
+                index_pairs = zip(range(i1, i2), range(j1, j2))
+            elif tag == 'replace':
+                index_pairs = PronunciationAnalysisSystem._pair_similar_words(
+                    student_words, range(i1, i2), reference_words, range(j1, j2))
+            else:
+                continue
+            for i, j in index_pairs:
+                if student_words[i] or reference_words[j]:
+                    pairs.append((student_segments[i], reference_segments[j]))
+        return pairs
+
+    @staticmethod
+    def _pair_similar_words(student_words, student_range, reference_words, reference_range,
+                            min_ratio=0.5):
+        """綴りの近さで単語を順番を保ったまま組にする（語数が違う置き換え区間用）"""
+        index_pairs = []
+        next_student = student_range.start
+        for j in reference_range:
+            best_i, best_ratio = None, min_ratio
+            for i in range(next_student, student_range.stop):
+                ratio = difflib.SequenceMatcher(a=student_words[i], b=reference_words[j]).ratio()
+                if ratio >= best_ratio:
+                    best_i, best_ratio = i, ratio
+            if best_i is not None:
+                index_pairs.append((best_i, j))
+                next_student = best_i + 1
+        return index_pairs
+
+    @staticmethod
+    def similarity_from_distance(distance: float) -> float:
+        return float(max(0.0, min(1.0, 1.0 - distance / MFCC_DISTANCE_SCALE)))
+
+    def compare_pronunciations(self, student_segments: List[WordSegment],
+                               reference_segments: List[WordSegment],
+                               student_audio: np.ndarray,
+                               reference_audio: np.ndarray) -> List[Dict]:
+        logger.info("Starting pronunciation comparison")
+        pairs = self.align_segments(student_segments, reference_segments)
+        logger.debug(
+            f"Segments - Student: {len(student_segments)}, Reference: {len(reference_segments)}, "
+            f"aligned: {len(pairs)}"
+        )
+
+        word_comparisons = []
+        for student_seg, ref_seg in pairs:
+            student_word = student_audio[int(student_seg.start * self.sample_rate):int(student_seg.end * self.sample_rate)]
+            reference_word = reference_audio[int(ref_seg.start * self.sample_rate):int(ref_seg.end * self.sample_rate)]
+            if len(student_word) < MIN_SEGMENT_SAMPLES or len(reference_word) < MIN_SEGMENT_SAMPLES:
+                logger.debug(f"Skipping too short segment for '{ref_seg.text}'")
+                continue
+
             student_mfcc = librosa.feature.mfcc(y=student_word, sr=self.sample_rate, n_mfcc=13)
             reference_mfcc = librosa.feature.mfcc(y=reference_word, sr=self.sample_rate, n_mfcc=13)
-            
-            logger.debug(f"MFCC shapes - Student: {student_mfcc.shape}, Reference: {reference_mfcc.shape}")
-            
-            # Calculate DTW distance
+
+            # 学習者の各フレームについて、参照音声で最も近いフレームとの距離の平均
+            # （DTW ではなく最近傍距離による簡易的な比較）
             distance_matrix = cdist(student_mfcc.T, reference_mfcc.T, metric='euclidean')
-            distance = distance_matrix.min(axis=1).mean()
-            
-            logger.debug(f"DTW distance for '{student_seg.text}': {distance}")
-            
-            # Store comparison results
-            comparison = {
-            'word': ref_seg.text,  # 参照音声から単語を取得
-            'difference_score': distance,
-            'confidence': ref_seg.confidence,
-            'start_time': ref_seg.start,  # 参照音声の開始時間
-            'end_time': ref_seg.end,      # 参照音声の終了時間
-            'student_start': student_seg.start,  # 学習者の時間も保持
-            'student_end': student_seg.end,
-            'duration_difference': (student_seg.end - student_seg.start) - 
-                                (ref_seg.end - ref_seg.start)
-        }
-            word_comparisons.append(comparison)
-            logger.debug(f"Comparison result: {comparison}")
-        
+            distance = float(distance_matrix.min(axis=1).mean())
+
+            word_comparisons.append({
+                'word': ref_seg.text,
+                'difference_score': distance,
+                'similarity': self.similarity_from_distance(distance),
+                'confidence': ref_seg.confidence,
+                'start_time': ref_seg.start,       # 参照音声の時間
+                'end_time': ref_seg.end,
+                'student_start': student_seg.start,
+                'student_end': student_seg.end,
+                'duration_difference': (student_seg.end - student_seg.start) - (ref_seg.end - ref_seg.start),
+            })
+
         word_comparisons.sort(key=lambda x: x['difference_score'], reverse=True)
         logger.info(f"Completed comparison of {len(word_comparisons)} words")
-        logger.debug("Top 3 different pronunciations: " + 
-                    ", ".join([f"{c['word']}({c['difference_score']:.2f})" 
-                             for c in word_comparisons[:3]]))
-        
         return word_comparisons

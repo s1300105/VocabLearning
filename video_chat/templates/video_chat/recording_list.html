@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Recordings</title>
+    <link rel="stylesheet" href="{% static 'video_chat/css/player.css' %}">
+</head>
+<body>
+    <div class="recording-player-container">
+        <h1>My Recordings</h1>
+        {% if recordings %}
+            <ul class="players-list">
+                {% for recording in recordings %}
+                    <li class="recording-player">
+                        <strong>{{ recording.created_at|date:"Y-m-d H:i" }}</strong>
+                        ({{ recording.duration }}s, {{ recording.get_status_display }})
+                        <br>
+                        <a href="{% url 'video_chat:player' %}?room_sid={{ recording.room_sid|urlencode }}">Play</a>
+                        {% if recording.transcript %}
+                            | <a href="{% url 'conversation_analysis:analysis_detail' recording.id %}">Analysis</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No recordings yet.</p>
+        {% endif %}
+        <p><a href="{% url 'video_chat:video_lesson' %}">Back to video lesson</a></p>
+    </div>
+</body>
+</html>

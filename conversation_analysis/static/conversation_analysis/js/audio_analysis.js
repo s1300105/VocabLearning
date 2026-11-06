@@ -10,6 +10,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentSentence = document.getElementById('current-sentence');
     const sentenceAudioSection = document.getElementById('sentence-audio-section');
  
+    // テンプレートから json_script で渡された値（文字列に直接埋め込まない）
+    const ROOM_SID = JSON.parse(document.getElementById('room-sid-data').textContent);
+    const TRANSCRIPT = JSON.parse(document.getElementById('transcript-data').textContent) || '';
+    const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const AUDIO_BASE_URL = '/conversation_analysis/audio-analysis/get-audio/';
+
+    function postForm(url) {
+        // 文字起こしはサーバー側で保存済みのものを使うので room_sid だけを送る
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: `room_sid=${encodeURIComponent(ROOM_SID)}`
+        });
+    }
+
+    const PROBLEM_SIMILARITY_THRESHOLD = 0.85;
+
     let fullAudioData = {
         analysis: {
             sentence_boundaries: []
@@ -19,19 +39,13 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadAudiosAndAnalyze() {
         try {
             message.textContent = 'Loading audio files...';
-            const audioResponse = await fetch('/conversation_analysis/audio-analysis/generate-audio/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `room_sid=${encodeURIComponent(window.ROOM_SID)}&transcript=${encodeURIComponent(window.TRANSCRIPT)}`
-            });
+            const audioResponse = await postForm('/conversation_analysis/audio-analysis/generate-audio/');
  
             const audioData = await audioResponse.json();
             if (audioData.error) throw new Error(audioData.error);
  
-            const modelPath = `/conversation_analysis/audio-analysis/get-audio/${audioData.audio_path.split('/').pop()}`;
-            const learnerPath = `/conversation_analysis/audio-analysis/get-audio/${audioData.audio_path_recorded.split('/').pop()}`;
+            const modelPath = AUDIO_BASE_URL + encodeURIComponent(audioData.audio_path);
+            const learnerPath = AUDIO_BASE_URL + encodeURIComponent(audioData.audio_path_recorded);
  
             modelAudio.src = modelPath;
             learnerAudio.src = learnerPath;
@@ -46,13 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
  
             message.textContent = 'Analyzing pronunciation...';
  
-            const analysisResponse = await fetch('/conversation_analysis/audio-analysis/analyze/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `room_sid=${encodeURIComponent(window.ROOM_SID)}&transcript=${encodeURIComponent(window.TRANSCRIPT)}`
-            });
+            const analysisResponse = await postForm('/conversation_analysis/audio-analysis/analyze/');
  
             const analysisData = await analysisResponse.json();
             if (analysisData.error) throw new Error(analysisData.error);
@@ -84,23 +92,22 @@ document.addEventListener('DOMContentLoaded', function() {
         pronunciationScore.textContent = `${(data.score * 100).toFixed(1)}%`;
         wordsAnalyzed.textContent = `${data.total_words || '-'} words`;
  
+        // 類似度の低い（＝発音の差が大きい）単語を最大5つ表示する。
+        // 類似度はサーバー側と同じ値（similarity）を使う。
         const problemWords = data.word_comparisons
-            .filter(comp => comp.difference_score > 150)
+            .filter(comp => comp.similarity < PROBLEM_SIMILARITY_THRESHOLD)
             .slice(0, 5)
             .map(comp => {
-                const score = ((1 - comp.difference_score/1000) * 100).toFixed(1);
-                return `<div class="word-item" 
-                    data-word="${comp.word}"
-                    data-start="${comp.start_time}"
-                    data-end="${comp.end_time}">
-                    ${comp.word} (${score}%)
-                </div>`;
-            }).join('');
-        wordComparisons.innerHTML = problemWords;
- 
-        document.querySelectorAll('.word-item').forEach(item => {
-            item.addEventListener('click', () => playWordComparison(item));
-        });
+                const item = document.createElement('div');
+                item.className = 'word-item';
+                item.dataset.word = comp.word;
+                item.dataset.start = comp.start_time;
+                item.dataset.end = comp.end_time;
+                item.textContent = `${comp.word} (${(comp.similarity * 100).toFixed(1)}%)`;
+                item.addEventListener('click', () => playWordComparison(item));
+                return item;
+            });
+        wordComparisons.replaceChildren(...problemWords);
     }
  
     function playWordComparison(wordElement) {
@@ -178,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentWord.textContent = word;
          
                 // 文脈を表示
-                const sentence = window.TRANSCRIPT.split(/[.!?]+/)
+                const sentence = TRANSCRIPT.split(/[.!?]+/)
                     .find(s => s.toLowerCase().includes(word.toLowerCase()));
                 if (sentence) {
                     currentSentence.textContent = sentence.trim() + '.';
