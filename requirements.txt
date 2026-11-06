@@ -1,0 +1,28 @@
+# Web framework
+Django>=5.0,<5.2
+python-dotenv
+channels
+daphne
+django-multiselectfield
+
+# Video lessons / transcription
+twilio
+openai
+requests
+pydub
+audioop-lts; python_version >= "3.13"  # pydub needs audioop, removed from the stdlib in 3.13
+
+# Background tasks (video_chat/tasks.py)
+celery
+redis
+
+# Conversation analysis
+nltk
+spacy  # also run: python -m spacy download en_core_web_sm
+pandas
+numpy
+scipy
+librosa
+
+# Local LLM for word_learning (needs the GGUF model file, see LLM_MODEL_PATH)
+llama-cpp-python
